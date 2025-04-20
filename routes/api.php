@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use \App\Http\Controllers\Admin\Login\apiLoginAdmin;
 use \App\Http\Controllers\Admin\TheLoai\TheLoaiController;
 use \App\Http\Controllers\Admin\CaSi\CaSiController;
-
+use \App\Http\Controllers\Admin\BaiHat\BaiHatController;
 /*Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');*/
@@ -25,4 +25,6 @@ Route::group([
     Route::get('getListCaSi', [CaSiController::class, 'getList']);
     Route::post('postSuaCaSi/{id}', [CaSiController::class, 'postCapNhatCaSi']);
     Route::delete('deleteCaSi/{id}', [CaSiController::class, 'delete']);
+    //BaiHat
+    Route::get('dsTheLoai', [BaiHatController::class, 'getTheLoai']);
 });

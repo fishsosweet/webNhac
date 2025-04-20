@@ -1,8 +1,9 @@
 import Sidebar from '../SideBar';
 import {SubmitHandler, useForm} from "react-hook-form";
 import {postCaSi} from "../../../services/Admin/CaSiService.tsx";
-import {useState} from "react";
-
+import {useState,useEffect} from "react";
+import {getDSTheLoai} from "../../../services/Admin/BaiHatService.tsx";
+import Select from 'react-select';
 type Inputs = {
     tenBaiHat: string,
     idCaSi:string,
@@ -13,10 +14,24 @@ type Inputs = {
     trangThai:boolean,
     ngayTao: Date,
 };
+
+
 const BaiHat = () => {
     const [thongBao, setThongBao] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const {register, handleSubmit, reset, formState: {errors},setValue} = useForm<Inputs>();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [theLoai,setTheLoai] =useState<any[]>([]);
+    const getTheLoai=async ()=>{
+        try{
+            const res = await getDSTheLoai();
+            if (res && Array.isArray(res)) {
+                setTheLoai(res);
+            }
+        }
+        catch (error){
+            setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
+        }
+    }
     const themBaiHat: SubmitHandler<Inputs> = async (data) => {
         try {
             const res = await postCaSi(data);
@@ -29,7 +44,9 @@ const BaiHat = () => {
             setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
         }
     }
-
+    useEffect(() => {
+        getTheLoai();
+    }, []);
 
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +62,10 @@ const BaiHat = () => {
     };
 
 
-
+    const options = theLoai.map((tl) => ({
+        value: tl.id,
+        label: tl.ten_theloai,
+    }));
     return (
         <div className="flex">
             <Sidebar/>
@@ -101,6 +121,20 @@ const BaiHat = () => {
                                         <span>Không</span>
                                     </label>
                                 </div>
+                            </div>
+                            <div className="mb-5">
+                                <label htmlFor="theloai">Chọn thể loại:</label>
+                                <Select
+                                    options={options}
+                                    onChange={(selectedOption) => {
+                                        // @ts-ignore
+                                        setValue('idTheLoai', selectedOption?.value); // Gán giá trị cho react-hook-form
+                                    }}
+                                    placeholder="Nhập tên thể loại..."
+                                />
+                                {errors.idTheLoai && (
+                                    <span className="text-red-600 text-sm">{errors.idTheLoai.message}</span>
+                                )}
                             </div>
                             <div className="mb-5">
                                 <label htmlFor="moTaCaSi" className="block text-sm font-medium text-gray-700 mb-1">
