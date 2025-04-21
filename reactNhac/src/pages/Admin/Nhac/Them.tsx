@@ -1,8 +1,9 @@
 import Sidebar from '../SideBar';
 import {SubmitHandler, useForm} from "react-hook-form";
-import {postCaSi} from "../../../services/Admin/CaSiService.tsx";
+
+import {postBaiHat} from "../../../services/Admin/BaiHatService.tsx";
 import {useState,useEffect} from "react";
-import {getDSTheLoai} from "../../../services/Admin/BaiHatService.tsx";
+import {getDSTheLoai,getDSCaSi} from "../../../services/Admin/BaiHatService.tsx";
 import Select from 'react-select';
 type Inputs = {
     tenBaiHat: string,
@@ -10,7 +11,7 @@ type Inputs = {
     idTheLoai: string,
     audio_URL: string,
     anh:File,
-    thoiLuong:bigint,
+    thoiLuong:number,
     trangThai:boolean,
     ngayTao: Date,
 };
@@ -21,6 +22,24 @@ const BaiHat = () => {
     const {register, handleSubmit, reset, formState: {errors},setValue} = useForm<Inputs>();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [theLoai,setTheLoai] =useState<any[]>([]);
+    const [casi,setCaSi] =useState<any[]>([]);
+    const [audioURL, setAudioURL] = useState<string>('');
+    const [isValid, setIsValid] = useState<boolean>(true);
+    const isValidYouTubeUrl = (url: string) => {
+        const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtube\.com)\/(watch\?v=|embed\/)([a-zA-Z0-9_-]{11})/;
+        return youtubeRegex.test(url);
+    };
+
+    const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const url = e.target.value;
+        setAudioURL(url);
+        setValue('audio_URL', url);
+        if (isValidYouTubeUrl(url)) {
+            setIsValid(true);
+        } else {
+            setIsValid(false);
+        }
+    };
     const getTheLoai=async ()=>{
         try{
             const res = await getDSTheLoai();
@@ -32,9 +51,21 @@ const BaiHat = () => {
             setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
         }
     }
+    const getCaSi=async ()=>{
+        try{
+            const res = await getDSCaSi();
+            if (res && Array.isArray(res)) {
+                setCaSi(res);
+            }
+        }
+        catch (error){
+            setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
+        }
+    }
     const themBaiHat: SubmitHandler<Inputs> = async (data) => {
         try {
-            const res = await postCaSi(data);
+
+            const res = await postBaiHat(data);
             setThongBao({
                 type: res.success ? 'success' : 'error',
                 message: res.message
@@ -46,6 +77,7 @@ const BaiHat = () => {
     }
     useEffect(() => {
         getTheLoai();
+        getCaSi();
     }, []);
 
 
@@ -62,9 +94,13 @@ const BaiHat = () => {
     };
 
 
-    const options = theLoai.map((tl) => ({
+    const optionsTheLoai = theLoai.map((tl) => ({
         value: tl.id,
         label: tl.ten_theloai,
+    }));
+    const optionsCaSi = casi.map((tl) => ({
+        value: tl.id,
+        label: tl.ten_casi,
     }));
     return (
         <div className="flex">
@@ -120,15 +156,23 @@ const BaiHat = () => {
                                         />
                                         <span>Không</span>
                                     </label>
+
                                 </div>
+                                {errors.trangThai && (
+                                    <span className="text-red-600 text-sm">{errors.trangThai.message}</span>
+                                )}
                             </div>
                             <div className="mb-5">
                                 <label htmlFor="theloai">Chọn thể loại:</label>
+                                <input
+                                    type="hidden"
+                                    {...register("idTheLoai", { required: "Vui lòng chọn thể loại" })}
+                                />
                                 <Select
-                                    options={options}
+                                    options={optionsTheLoai}
                                     onChange={(selectedOption) => {
                                         // @ts-ignore
-                                        setValue('idTheLoai', selectedOption?.value); // Gán giá trị cho react-hook-form
+                                        setValue('idTheLoai', selectedOption?.value);
                                     }}
                                     placeholder="Nhập tên thể loại..."
                                 />
@@ -137,19 +181,24 @@ const BaiHat = () => {
                                 )}
                             </div>
                             <div className="mb-5">
-                                <label htmlFor="moTaCaSi" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Mô tả ca sĩ
-                                </label>
-                                <textarea
-                                    id="moTaCaSi"
-
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                                    {...register("moTa", {required: "Vui lòng nhập mô tả ca sĩ"})}
+                                <label htmlFor="theloai">Chọn ca sĩ:</label>
+                                <input
+                                    type="hidden"
+                                    {...register("idCaSi", {required: "Vui lòng chọn ca sĩ"})}
                                 />
-                                {errors.moTa && (
-                                    <span className="text-red-600 text-sm">{errors.moTa.message}</span>
+                                <Select
+                                    options={optionsCaSi}
+                                    onChange={(selectedOption) => {
+                                        // @ts-ignore
+                                        setValue('idCaSi', selectedOption?.value);
+                                    }}
+                                    placeholder="Nhập tên thể loại..."
+                                />
+                                {errors.idCaSi && (
+                                    <span className="text-red-600 text-sm">{errors.idCaSi.message}</span>
                                 )}
                             </div>
+
                         </div>
 
                         <div>
@@ -162,9 +211,8 @@ const BaiHat = () => {
                                     id="anh"
                                     name="anh"
                                     accept="image/*"
-                                    onChange={handleImageChange} // Xử lý ảnh preview
+                                    onChange={handleImageChange}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                                    // Không dùng register ở đây
                                 />
                                 {previewImage && (
                                     <div id="image_show" className="mt-2">
@@ -172,6 +220,66 @@ const BaiHat = () => {
                                     </div>
                                 )}
                             </div>
+                            <div className="mb-5">
+                                <label htmlFor="audioURL" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Link nhạc từ YouTube
+                                </label>
+                                <input
+                                    type="text"
+                                    id="audioURL"
+                                    value={audioURL}
+                                    {...register("audio_URL", { required: "Vui lòng nhập link YouTube" })}
+                                    onChange={handleAudioChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                                    placeholder="Nhập link YouTube"
+
+                                />
+
+                                {!isValid &&(
+                                    <span className="text-red-600 text-sm">Vui lòng nhập link hợp lệ YouTube</span>
+                                )}
+                                {errors.audio_URL && (
+                                    <><br></br><span
+                                        className="text-red-600 text-sm">{errors.audio_URL.message}</span></>
+                                )}
+                            </div>
+                            {isValid && audioURL && (
+                                <div className="mt-4">
+                                    <iframe
+                                        width="300"
+                                        height="200"
+                                        src={`https://www.youtube.com/embed/${audioURL.split('v=')[1]}`}
+                                        title="YouTube video player"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                </div>
+                            )}
+                            <div className="mb-5">
+                                <label htmlFor="thoiluong" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Thời lượng (phút)
+                                </label>
+                                <input
+                                    type="number"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                                    {...register("thoiLuong", {
+                                        required: "Vui lòng nhập thời lượng bài hát",
+                                        min: {
+                                            value: 1,
+                                            message: "Thời lượng tối thiểu là 1 phút"
+                                        },
+                                        max: {
+                                            value: 60,
+                                            message: "Thời lượng tối đa là 60 phút"
+                                        }
+                                    })}
+                                />
+                                {errors.thoiLuong && (
+                                    <span className="text-red-600 text-sm">{errors.thoiLuong.message}</span>
+                                )}
+                            </div>
+
 
                             <div className="mb-5">
                                 <label htmlFor="created_at" className="block text-sm font-medium text-gray-700 mb-1">
@@ -196,7 +304,7 @@ const BaiHat = () => {
                         type="submit"
                         className="btn btn-primary btn-lg mt-5 bg-blue-500 text-white px-4 py-2 rounded-lg"
                     >
-                        Thêm thể loại
+                        Thêm bài hát
                     </button>
                 </form>
             </div>

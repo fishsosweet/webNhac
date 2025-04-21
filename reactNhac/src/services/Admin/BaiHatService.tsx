@@ -1,13 +1,15 @@
 import axiosInstance from "../../../configs/axios.tsx";
 
 type post = {
-    tenCaSi: string,
-    gioiTinh: string,
-    moTa: string,
+    tenBaiHat: string,
+    idCaSi:string,
+    idTheLoai: string,
+    audio_URL: string,
     anh:File,
-    ngayTao?: Date,
-    ngayCapNhat?: Date,
-}
+    thoiLuong:number,
+    trangThai:boolean,
+    ngayTao: Date,
+};
 
 const getDSTheLoai =async ()=>{
     try{
@@ -18,18 +20,30 @@ const getDSTheLoai =async ()=>{
         return {success: false, message: errorMessage};
     }
 }
+const getDSCaSi =async ()=>{
+    try{
+        const res=await axiosInstance.get('/auth/dsCaSi');
+        return res.data
+    }catch (error: any){
+        const errorMessage = error.response?.data?.error || "Đã có lỗi xảy ra";
+        return {success: false, message: errorMessage};
+    }
+}
 
-const postCaSi = async (casi: post) => {
+const postBaiHat = async (baihat: post) => {
     try {
         const formData = new FormData();
-        formData.append('tenCaSi', casi.tenCaSi);
-        formData.append('gioiTinh', casi.gioiTinh);
-        formData.append('moTa', casi.moTa);
-        formData.append('anh', casi.anh);
+        formData.append('tenBaiHat', baihat.tenBaiHat);
+        formData.append('idCaSi', baihat.idCaSi);
+        formData.append('idTheLoai', baihat.idTheLoai);
+        formData.append('audio_URL', baihat.audio_URL);
+        formData.append('trangThai', baihat.trangThai.toString());
+        formData.append('thoiLuong', baihat.thoiLuong.toString());
+        formData.append('anh', baihat.anh);
         // @ts-ignore
-        formData.append('ngayTao', casi.ngayTao);
+        formData.append('ngayTao', baihat.ngayTao);
 
-        const response = await axiosInstance.post('/auth/postCaSi', formData, {
+        const response = await axiosInstance.post('/auth/postBaiHat', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             }
@@ -81,4 +95,4 @@ const deleteCaSi = async (id: number) => {
 };
 
 
-export {postCaSi,getListCaSi,deleteCaSi,postSuaCaSi,getDSTheLoai};
+export {postBaiHat,getListCaSi,deleteCaSi,postSuaCaSi,getDSTheLoai,getDSCaSi};

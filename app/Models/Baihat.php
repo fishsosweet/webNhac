@@ -12,6 +12,8 @@ class Baihat extends Model
     protected $fillable = [
         'id',
         'title',
+        'casi_id',
+        'theloai_id',
         'audio_url',
         'anh',
         'thoiluong',

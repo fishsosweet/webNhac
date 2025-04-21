@@ -20,7 +20,7 @@ class CaSiService extends Controller
                 $nameimage = $request->file('anh')->getClientOriginalName();
                 $path = 'uploads/' . date("Y/m/d");
                 if (!file_exists(public_path($path))) {
-                    mkdir(public_path($path), 0777, true); // Tạo thư mục nếu chưa có
+                    mkdir(public_path($path), 0777, true);
                 }
                 $request->file('anh')->move(public_path($path), $nameimage);
                 $pathanh = $path . '/' . $nameimage;

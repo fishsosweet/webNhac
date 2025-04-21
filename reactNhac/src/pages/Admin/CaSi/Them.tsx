@@ -98,7 +98,11 @@ const CaSi = () => {
                                         />
                                         <span>Nữ</span>
                                     </label>
+
                                 </div>
+                                {errors.gioiTinh && (
+                                    <span className="text-red-600 text-sm">{errors.gioiTinh.message}</span>
+                                )}
                             </div>
                             <div className="mb-5">
                                 <label htmlFor="moTaCaSi" className="block text-sm font-medium text-gray-700 mb-1">

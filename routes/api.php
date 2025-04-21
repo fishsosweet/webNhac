@@ -27,4 +27,6 @@ Route::group([
     Route::delete('deleteCaSi/{id}', [CaSiController::class, 'delete']);
     //BaiHat
     Route::get('dsTheLoai', [BaiHatController::class, 'getTheLoai']);
+    Route::get('dsCaSi', [BaiHatController::class, 'getCaSi']);
+    Route::post('postBaiHat', [BaiHatController::class, 'postBaiHat']);
 });
