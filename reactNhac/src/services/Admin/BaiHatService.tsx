@@ -56,10 +56,10 @@ const postBaiHat = async (baihat: post) => {
     }
 };
 
-const postSuaCaSi = async (casi: post,id: number) => {
+const postSuaBaiHat = async (baihat: post,id: number) => {
     try {
         const formData = new FormData();
-        formData.append('tenCaSi', casi.tenCaSi);
+        formData.append('tenCaSi', baihat.tenCaSi);
         formData.append('gioiTinh', casi.gioiTinh);
         formData.append('moTa', casi.moTa);
         formData.append('anh', casi.anh);
@@ -76,9 +76,9 @@ const postSuaCaSi = async (casi: post,id: number) => {
     }
 }
 
-const getListCaSi = async (page: number) => {
+const getListBaiHat = async (page: number) => {
     try {
-        const response = await axiosInstance.get(`/auth/getListCaSi?page=${page}`);
+        const response = await axiosInstance.get(`/auth/getListBaiHat?page=${page}`);
         return response.data;
     } catch (error: any) {
         throw error.response?.data?.error || 'Đã xảy ra lỗi!';
@@ -95,4 +95,4 @@ const deleteCaSi = async (id: number) => {
 };
 
 
-export {postBaiHat,getListCaSi,deleteCaSi,postSuaCaSi,getDSTheLoai,getDSCaSi};
+export {postBaiHat,getListBaiHat,deleteCaSi,postSuaBaiHat,getDSTheLoai,getDSCaSi};

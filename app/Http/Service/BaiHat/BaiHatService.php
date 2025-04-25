@@ -57,4 +57,16 @@ class BaiHatService extends Controller
             ], 500);
         }
     }
+
+
+
+    public function list()
+    {
+        $BaiHat = Baihat::with(['casi:id,ten_casi', 'theloai:id,ten_theloai'])
+            ->select('id', 'title', 'audio_url','thoiluong','trangthai', 'anh', 'casi_id', 'theloai_id', 'updated_at')
+            ->paginate(10);
+        if ($BaiHat->count() > 0)
+            return response()->json($BaiHat, 201);
+        return response()->json(['error' => 'Không có dữ liệu'], 500);
+    }
 }

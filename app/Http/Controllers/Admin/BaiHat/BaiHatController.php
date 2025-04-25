@@ -27,4 +27,9 @@ class BaiHatController extends Controller
         $response = $this->baiHatService->post($request);
         return $response;
     }
+
+    public function getList(){
+        $response=$this->baiHatService->list();
+        return $response;
+    }
 }

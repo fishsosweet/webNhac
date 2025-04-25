@@ -7,7 +7,7 @@ import CaSi from '../src/pages/Admin/CaSi/Them.tsx'
 import BaiHat from "./pages/Admin/Nhac/Them.tsx";
 import SuaCaSi from '../src/pages/Admin/CaSi/Sua.tsx'
 import ListCaSi from '../src/pages/Admin/CaSi/List.tsx'
-
+import ListBaiHat from "./pages/Admin/Nhac/List.tsx";
 import {
     createBrowserRouter,
     RouterProvider,
@@ -65,6 +65,12 @@ const router = createBrowserRouter([
         path: "/admin/list-singers",
         element:  <PrivateRoute>
             <ListCaSi />
+        </PrivateRoute>
+    },
+    {
+        path: "/admin/list-songs",
+        element:  <PrivateRoute>
+            <ListBaiHat />
         </PrivateRoute>
     },
     {

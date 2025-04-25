@@ -49,10 +49,10 @@ const ListTheLoai = () => {
     };
 
     return (
-        <div className="flex">
+        <div className="flex ">
             <Sidebar/>
             <div className="flex-1 p-10 ">
-                <table className="text-black w-[1100px] text-center border border-black border-collapse">
+                <table className="text-black w-full text-center border border-black border-collapse">
                     <thead>
                     <tr className="bg-blue-300 border border-black">
                         <th className="w-[50px] border border-black">ID</th>

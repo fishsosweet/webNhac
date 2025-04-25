@@ -97,7 +97,7 @@ const SideBar = () => {
                         <div className="bg-gray-700 bg-opacity-50 rounded-lg mt-1 pl-4 py-2">
                             <ul className="space-y-1 pr-3">
                                 <li><Link to="/admin/add-songs" className="block p-2 hover:bg-gray-600 rounded" >Thêm bài hát</Link></li>
-                                <li><a href="#" className="block p-2 hover:bg-gray-600 rounded">Danh sách bài hát</a>
+                                <li><Link to="/admin/list-songs" className="block p-2 hover:bg-gray-600 rounded">Danh sách bài hát</Link>
                                 </li>
                             </ul>
                         </div>

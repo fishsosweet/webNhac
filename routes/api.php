@@ -29,4 +29,5 @@ Route::group([
     Route::get('dsTheLoai', [BaiHatController::class, 'getTheLoai']);
     Route::get('dsCaSi', [BaiHatController::class, 'getCaSi']);
     Route::post('postBaiHat', [BaiHatController::class, 'postBaiHat']);
+    Route::get('getListBaiHat', [BaiHatController::class, 'getList']);
 });
