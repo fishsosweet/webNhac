@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-
+import {loadYouTubeAPI} from '../services/APIAudioSong.tsx';
 // Cần cho TypeScript hiểu global YT
 declare global {
     interface Window {
@@ -42,18 +42,6 @@ const YouTubeAudioPlayer: React.FC<YouTubeAudioPlayerProps> = ({ videoUrl }) => 
 
     // Tải và khởi tạo player
     useEffect(() => {
-        const loadYouTubeAPI = (): Promise<void> => {
-            return new Promise((resolve) => {
-                if (window.YT && window.YT.Player) {
-                    resolve();
-                    return;
-                }
-                const tag = document.createElement('script');
-                tag.src = 'https://www.youtube.com/iframe_api';
-                document.body.appendChild(tag);
-                window.onYouTubeIframeAPIReady = () => resolve();
-            });
-        };
 
         const initPlayer = async () => {
             await loadYouTubeAPI();

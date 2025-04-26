@@ -1,10 +1,11 @@
 import Sidebar from '../SideBar';
 import {SubmitHandler, useForm} from "react-hook-form";
 
-import {postBaiHat} from "../../../services/Admin/BaiHatService.tsx";
+import {postSuaBaiHat} from "../../../services/Admin/BaiHatService.tsx";
 import {useState,useEffect} from "react";
-import {getDSTheLoai,getDSCaSi} from "../../../services/Admin/BaiHatService.tsx";
+import {getDSTheLoai,getDSCaSi,getThongTinBaiHat} from "../../../services/Admin/BaiHatService.tsx";
 import Select from 'react-select';
+import {useParams} from "react-router-dom";
 type Inputs = {
     tenBaiHat: string,
     idCaSi:string,
@@ -13,15 +14,18 @@ type Inputs = {
     anh:File,
     thoiLuong:number,
     trangThai:boolean,
-    ngayTao: Date,
+    ngayTao?: Date,
+    ngayCapNhat?:Date
 };
 
 
-const BaiHat = () => {
+const SuaBaiHat = () => {
+    const { id } = useParams();
     const [thongBao, setThongBao] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-    const {register, handleSubmit, reset, formState: {errors},setValue} = useForm<Inputs>();
+    const {register, handleSubmit, reset,watch, formState: {errors},setValue} = useForm<Inputs>();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [theLoai,setTheLoai] =useState<any[]>([]);
+    const [baiHat,setBaiHat] =useState<any>(null);
     const [casi,setCaSi] =useState<any[]>([]);
     const [audioURL, setAudioURL] = useState<string>('');
     const [isValid, setIsValid] = useState<boolean>(true);
@@ -51,6 +55,18 @@ const BaiHat = () => {
             setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
         }
     }
+
+    const getBaiHat=async ()=>{
+        try{
+            const res = await getThongTinBaiHat(parseInt(id!));
+            if (res) {
+                setBaiHat(res);
+            }
+        }
+        catch (error){
+            setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
+        }
+    }
     const getCaSi=async ()=>{
         try{
             const res = await getDSCaSi();
@@ -65,7 +81,7 @@ const BaiHat = () => {
     const themBaiHat: SubmitHandler<Inputs> = async (data) => {
         try {
 
-            const res = await postBaiHat(data);
+            const res = await postSuaBaiHat(data,parseInt(id!));
             setThongBao({
                 type: res.success ? 'success' : 'error',
                 message: res.message
@@ -78,12 +94,14 @@ const BaiHat = () => {
     useEffect(() => {
         getTheLoai();
         getCaSi();
+        getBaiHat();
     }, []);
 
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            setPreviewImage(null);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreviewImage(reader.result as string);
@@ -102,6 +120,28 @@ const BaiHat = () => {
         value: tl.id,
         label: tl.ten_casi,
     }));
+    const updateAudioURL = (url: string) => {
+        setAudioURL(url);
+        setValue('audio_URL', url);
+        if (isValidYouTubeUrl(url)) {
+            setIsValid(true);
+        } else {
+            setIsValid(false);
+        }
+    };
+    useEffect(() => {
+        if (baiHat) {
+            setValue('trangThai', baiHat.trangthai.toString());
+            setValue('tenBaiHat', baiHat.title);
+            setValue('idTheLoai', baiHat.theloai_id);
+            setValue('idCaSi', baiHat.casi_id);
+            setPreviewImage(baiHat.anh);
+            updateAudioURL(baiHat.audio_url);
+            setValue('thoiLuong', parseInt(baiHat.thoiluong));
+        }
+    }, [baiHat]);
+
+
     return (
         <div className="flex">
             <Sidebar/>
@@ -118,7 +158,7 @@ const BaiHat = () => {
                         <span className="block sm:inline">{thongBao.message}</span>
                     </div>
                 )}
-                <h1 className="mb-4 font-bold text-2xl">Thêm Bài Hát</h1>
+                <h1 className="mb-4 font-bold text-2xl">Cập nhật Bài Hát</h1>
                 <form encType="multipart/form-data" onSubmit={handleSubmit(themBaiHat)}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -164,22 +204,26 @@ const BaiHat = () => {
                             </div>
                             <div className="mb-5">
                                 <label htmlFor="theloai">Chọn thể loại:</label>
+
                                 <input
                                     type="hidden"
-                                    {...register("idTheLoai", { required: "Vui lòng chọn thể loại" })}
+                                    {...register("idTheLoai", {required: "Vui lòng chọn thể loại"})}
                                 />
+
                                 <Select
                                     options={optionsTheLoai}
+                                    value={optionsTheLoai.find(option => option.value === watch('idTheLoai')) || null}
                                     onChange={(selectedOption) => {
-                                        // @ts-ignore
                                         setValue('idTheLoai', selectedOption?.value);
                                     }}
                                     placeholder="Nhập tên thể loại..."
                                 />
+
                                 {errors.idTheLoai && (
                                     <span className="text-red-600 text-sm">{errors.idTheLoai.message}</span>
                                 )}
                             </div>
+
                             <div className="mb-5">
                                 <label htmlFor="theloai">Chọn ca sĩ:</label>
                                 <input
@@ -187,7 +231,9 @@ const BaiHat = () => {
                                     {...register("idCaSi", {required: "Vui lòng chọn ca sĩ"})}
                                 />
                                 <Select
+
                                     options={optionsCaSi}
+                                    value={optionsCaSi.find(option => option.value === watch('idCaSi')) || null}
                                     onChange={(selectedOption) => {
                                         // @ts-ignore
                                         setValue('idCaSi', selectedOption?.value);
@@ -216,7 +262,7 @@ const BaiHat = () => {
                                 />
                                 {previewImage && (
                                     <div id="image_show" className="mt-2">
-                                        <img src={previewImage} alt="Preview" className="h-40 object-cover rounded-md"/>
+                                        <img src={previewImage.startsWith('data:') ? previewImage : `http://127.0.0.1:8000/${previewImage}`} alt="Preview" className="h-40 object-cover rounded-md"/>
                                     </div>
                                 )}
                             </div>
@@ -283,16 +329,15 @@ const BaiHat = () => {
 
                             <div className="mb-5">
                                 <label htmlFor="created_at" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Ngày tạo
+                                    Ngày cập nhật
                                 </label>
                                 <input
                                     type="datetime-local"
-                                    id="created_at"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                                    {...register("ngayTao", {required: "Vui lòng chọn ngày tạo"})}
+                                    {...register("ngayCapNhat", {required: "Vui lòng chọn ngày tạo"})}
                                 />
-                                {errors.ngayTao && (
-                                    <span className="text-red-600 text-sm">{errors.ngayTao.message}</span>
+                                {errors.ngayCapNhat && (
+                                    <span className="text-red-600 text-sm">{errors.ngayCapNhat.message}</span>
                                 )}
                             </div>
                         </div>
@@ -304,7 +349,7 @@ const BaiHat = () => {
                         type="submit"
                         className="btn btn-primary btn-lg mt-5 bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer"
                     >
-                        Thêm bài hát
+                        Cập nhật bài hát
                     </button>
                 </form>
             </div>
@@ -312,4 +357,4 @@ const BaiHat = () => {
     );
 };
 
-export default BaiHat;
+export default SuaBaiHat;

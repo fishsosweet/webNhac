@@ -28,6 +28,9 @@ Route::group([
     //BaiHat
     Route::get('dsTheLoai', [BaiHatController::class, 'getTheLoai']);
     Route::get('dsCaSi', [BaiHatController::class, 'getCaSi']);
+    Route::get('thongTinBaiHat/{id}', [BaiHatController::class, 'getBaiHat']);
     Route::post('postBaiHat', [BaiHatController::class, 'postBaiHat']);
     Route::get('getListBaiHat', [BaiHatController::class, 'getList']);
+    Route::post('postSuaBaiHat/{id}', [BaiHatController::class, 'postCapNhatBaiHat']);
+    Route::delete('deleteBaiHat/{id}', [BaiHatController::class, 'delete']);
 });

@@ -20,7 +20,7 @@ return new class extends Migration
 
             $table->string('audio_url', 255);
             $table->string('anh', 255)->nullable();
-            $table->time('thoiluong')->nullable();
+            $table->integer('thoiluong')->nullable();
             $table->boolean('trangthai')->default(true);
             $table->timestamps(); // Tạo created_at & updated_at
 

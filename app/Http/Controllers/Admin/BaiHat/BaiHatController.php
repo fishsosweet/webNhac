@@ -32,4 +32,21 @@ class BaiHatController extends Controller
         $response=$this->baiHatService->list();
         return $response;
     }
+
+    public function postCapNhatBaiHat(Request $request,$id)
+    {
+        $response = $this->baiHatService->update($request,$id);
+        return $response;
+    }
+
+    public function getBaiHat($id)
+    {
+        $response = $this->baiHatService->getID($id);
+        return $response;
+    }
+
+    public function delete($id){
+        $response = $this->baiHatService->destroy($id);
+        return $response;
+    }
 }

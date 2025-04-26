@@ -59,6 +59,47 @@ class BaiHatService extends Controller
     }
 
 
+    public function update($request, $id)
+    {
+        $request->validate([
+            'anh' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+        ]);
+        try {
+
+            $baihat = Baihat::find($id);
+            if (!$baihat) {
+
+                return response()->json(['error' => 'Bài hát không tồn tại'], 404);
+            }
+            $pathanh='';
+            if($request->hasFile('anh') && $request->file('anh')->isValid()){
+                $nameimage = $request->file('anh')->getClientOriginalName();
+                $path = 'uploads/' . date("Y/m/d");
+                if (!file_exists(public_path($path))) {
+                    mkdir(public_path($path), 0777, true); // Tạo thư mục nếu chưa có
+                }
+                $request->file('anh')->move(public_path($path), $nameimage);
+                $pathanh = $path . '/' . $nameimage;
+
+            }
+
+            $baihat->title= $request->tenBaiHat;
+            $baihat->casi_id = $request->idCaSi;
+            $baihat->theloai_id = $request->idTheLoai;
+            $baihat->audio_url = $request->audio_URL;
+            $baihat->trangthai = $request->trangThai;
+            $baihat->thoiLuong = $request->thoiLuong;
+            $baihat->anh =$pathanh;
+            $baihat->updated_at = $request->ngayCapNhat;
+            $baihat->save();
+            return response()->json(['success' => 'Cập nhật bài hát thành công'], 200);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'error' => 'Cập nhật bài hát thất bại'
+            ], 500);
+        }
+    }
+
 
     public function list()
     {
@@ -68,5 +109,28 @@ class BaiHatService extends Controller
         if ($BaiHat->count() > 0)
             return response()->json($BaiHat, 201);
         return response()->json(['error' => 'Không có dữ liệu'], 500);
+    }
+
+    public function getID($id)
+    {
+        try {
+            $baihat = Baihat::find($id);
+            return response()->json($baihat);
+        }catch (\Exception $exception) {
+            return response()->json([
+                'error' =>"ID không tồn tại"
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $baihat = Baihat::find($id);
+        if (!$baihat) {
+            return response()->json(['erorr' => 'Không tìm thấy bài hát'], 404);
+        }
+
+        $baihat->delete();
+        return response()->json(['success' => 'Xóa thành công']);
     }
 }

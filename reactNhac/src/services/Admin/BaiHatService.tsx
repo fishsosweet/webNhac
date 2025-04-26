@@ -8,7 +8,8 @@ type post = {
     anh:File,
     thoiLuong:number,
     trangThai:boolean,
-    ngayTao: Date,
+    ngayTao?: Date,
+    ngayCapNhat?:Date
 };
 
 const getDSTheLoai =async ()=>{
@@ -25,6 +26,16 @@ const getDSCaSi =async ()=>{
         const res=await axiosInstance.get('/auth/dsCaSi');
         return res.data
     }catch (error: any){
+        const errorMessage = error.response?.data?.error || "Đã có lỗi xảy ra";
+        return {success: false, message: errorMessage};
+    }
+}
+
+const getThongTinBaiHat = async (id: number) => {
+    try {
+        const res = await axiosInstance.get(`/auth/thongTinBaiHat/${id}`);
+        return res.data
+    } catch (error: any) {
         const errorMessage = error.response?.data?.error || "Đã có lỗi xảy ra";
         return {success: false, message: errorMessage};
     }
@@ -59,13 +70,16 @@ const postBaiHat = async (baihat: post) => {
 const postSuaBaiHat = async (baihat: post,id: number) => {
     try {
         const formData = new FormData();
-        formData.append('tenCaSi', baihat.tenCaSi);
-        formData.append('gioiTinh', casi.gioiTinh);
-        formData.append('moTa', casi.moTa);
-        formData.append('anh', casi.anh);
+        formData.append('tenBaiHat', baihat.tenBaiHat);
+        formData.append('idCaSi', baihat.idCaSi);
+        formData.append('idTheLoai', baihat.idTheLoai);
+        formData.append('audio_URL', baihat.audio_URL);
+        formData.append('trangThai', baihat.trangThai.toString());
+        formData.append('thoiLuong', baihat.thoiLuong.toString());
+        formData.append('anh', baihat.anh);
         // @ts-ignore
-        formData.append('ngayCapNhat', casi.ngayCapNhat);
-        const response = await axiosInstance.post(`/auth/postSuaCaSi/${id}`,  formData, {
+        formData.append('ngayCapNhat', baihat.ngayCapNhat);
+        const response = await axiosInstance.post(`/auth/postSuaBaiHat/${id}`,  formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             }
@@ -76,6 +90,8 @@ const postSuaBaiHat = async (baihat: post,id: number) => {
     }
 }
 
+
+
 const getListBaiHat = async (page: number) => {
     try {
         const response = await axiosInstance.get(`/auth/getListBaiHat?page=${page}`);
@@ -85,9 +101,9 @@ const getListBaiHat = async (page: number) => {
     }
 }
 
-const deleteCaSi = async (id: number) => {
+const deleteBaiHat = async (id: number) => {
     try {
-        const response = await axiosInstance.delete(`/auth/deleteCaSi/${id}`);
+        const response = await axiosInstance.delete(`/auth/deleteBaiHat/${id}`);
         return response.data;
     } catch (error: any) {
         throw error.response?.data || error;
@@ -95,4 +111,4 @@ const deleteCaSi = async (id: number) => {
 };
 
 
-export {postBaiHat,getListBaiHat,deleteCaSi,postSuaBaiHat,getDSTheLoai,getDSCaSi};
+export {postBaiHat,getListBaiHat,deleteBaiHat,postSuaBaiHat,getDSTheLoai,getDSCaSi,getThongTinBaiHat};

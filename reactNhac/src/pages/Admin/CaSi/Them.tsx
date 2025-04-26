@@ -162,7 +162,7 @@ const CaSi = () => {
 
                     <button
                         type="submit"
-                        className="btn btn-primary btn-lg mt-5 bg-blue-500 text-white px-4 py-2 rounded-lg"
+                        className="btn btn-primary btn-lg mt-5 bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer"
                     >
                         Thêm thể loại
                     </button>

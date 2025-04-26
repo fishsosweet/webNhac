@@ -1,7 +1,7 @@
 import ReactPaginate from "react-paginate";
 import { useState, useEffect } from 'react';
 import Sidebar from '../SideBar';
-import { getListBaiHat} from "../../../services/Admin/BaiHatService";
+import { getListBaiHat,deleteBaiHat} from "../../../services/Admin/BaiHatService";
 import { Link } from "react-router-dom";
 import dayjs from 'dayjs';
 import YouTubeAudioPlayer from "../../../services/AudioSong.tsx";
@@ -22,7 +22,7 @@ const ListBaiHat = () => {
     }
 
     const handleDelete = async (id: number) => {
-        const confirmDelete = confirm("Bạn có chắc chắn muốn xóa thể loại này?");
+        const confirmDelete = confirm("Bạn có chắc chắn muốn xóa bài hát này?");
         if (!confirmDelete) return;
         try {
             await deleteBaiHat(id);
@@ -82,13 +82,13 @@ const ListBaiHat = () => {
                                 <td className="bg-white text-black border border-black">
                                     {item.theloai.ten_theloai}
                                 </td>
-                                <td className="bg-white text-black flex justify-center items-center pt-5">
+                                <td className="bg-white text-black border border-black p-2">
                                     <div className="justify-center items-center flex">
                                         <YouTubeAudioPlayer videoUrl={item.audio_url}/>
                                     </div>
                                 </td>
                                 <td className="bg-white text-black border border-black ">
-                                    <img src={`http://127.0.0.1:8000/${item.anh}`} className="w-[50px] h-[50px] m-auto"
+                                    <img src={`http://127.0.0.1:8000/${item.anh}`} className="w-[90px] h-[70px] m-auto p-2"
                                          alt="Poster"/>
                                 </td>
                                 <td className="bg-white text-black border border-black">

@@ -8,6 +8,7 @@ import BaiHat from "./pages/Admin/Nhac/Them.tsx";
 import SuaCaSi from '../src/pages/Admin/CaSi/Sua.tsx'
 import ListCaSi from '../src/pages/Admin/CaSi/List.tsx'
 import ListBaiHat from "./pages/Admin/Nhac/List.tsx";
+import SuaBaiHat from "./pages/Admin/Nhac/Sua.tsx";
 import {
     createBrowserRouter,
     RouterProvider,
@@ -83,6 +84,12 @@ const router = createBrowserRouter([
         path: "/admin/singers/edit/:id",
         element:  <PrivateRoute>
             <SuaCaSi />
+        </PrivateRoute>
+    },
+    {
+        path: "/admin/songs/edit/:id",
+        element:  <PrivateRoute>
+            <SuaBaiHat />
         </PrivateRoute>
     },
 ]);
