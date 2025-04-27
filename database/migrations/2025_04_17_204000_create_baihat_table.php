@@ -14,17 +14,16 @@ return new class extends Migration
         Schema::create('baihat', function (Blueprint $table) {
             $table->id();
             $table->string('title', 100);
-
             $table->unsignedBigInteger('casi_id');
             $table->unsignedBigInteger('theloai_id');
-
             $table->string('audio_url', 255);
-            $table->string('anh', 255)->nullable();
-            $table->integer('thoiluong')->nullable();
+            $table->string('anh', 255);
+            $table->string('lyrics', 255);
+            $table->integer('thoiluong');
+            $table->integer('luotxem');
             $table->boolean('trangthai')->default(true);
-            $table->timestamps(); // Tạo created_at & updated_at
+            $table->timestamps();
 
-            // Khóa ngoại
             $table->foreign('casi_id')->references('id')->on('casi')->onDelete('cascade');
             $table->foreign('theloai_id')->references('id')->on('theloai')->onDelete('cascade');
         });

@@ -16,6 +16,8 @@ class Baihat extends Model
         'theloai_id',
         'audio_url',
         'anh',
+        'lyrics',
+        'luotxem',
         'thoiluong',
         'trangthai',
         'created_at',

@@ -89,6 +89,7 @@ class BaiHatService extends Controller
             $baihat->audio_url = $request->audio_URL;
             $baihat->trangthai = $request->trangThai;
             $baihat->thoiLuong = $request->thoiLuong;
+            $baihat->lyrics= $request->loiBaiHat;
             $baihat->anh =$pathanh;
             $baihat->updated_at = $request->ngayCapNhat;
             $baihat->save();

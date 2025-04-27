@@ -19,12 +19,16 @@ import LoginPage from "./pages/Admin/LoginPage.tsx";
 import UserPage from "./pages/UserPage.tsx";
 import AdminPage from "./pages/Admin/AdminPage.tsx";
 import SuaTheLoai from "./pages/Admin/TheLoai/Sua.tsx";
-
+import SidebarUser from "./pages/User/SideBar.tsx"
 
 const router = createBrowserRouter([
     {
         path: "/login-admin",
         element: <LoginPage/>,
+    },
+    {
+        path: "/zingmp4",
+        element: <SidebarUser/>,
     },
     {
         path: "/user",

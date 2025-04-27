@@ -11,6 +11,7 @@ type Inputs = {
     idTheLoai: string,
     audio_URL: string,
     anh:File,
+    loiBaiHat: string,
     thoiLuong:number,
     trangThai:boolean,
     ngayTao: Date,
@@ -166,7 +167,7 @@ const BaiHat = () => {
                                 <label htmlFor="theloai">Chọn thể loại:</label>
                                 <input
                                     type="hidden"
-                                    {...register("idTheLoai", { required: "Vui lòng chọn thể loại" })}
+                                    {...register("idTheLoai", {required: "Vui lòng chọn thể loại"})}
                                 />
                                 <Select
                                     options={optionsTheLoai}
@@ -198,7 +199,20 @@ const BaiHat = () => {
                                     <span className="text-red-600 text-sm">{errors.idCaSi.message}</span>
                                 )}
                             </div>
+                            <div className="mb-5">
+                                <label htmlFor="loiBaiHat" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Lyrics
+                                </label>
+                                <textarea
+                                    id="loiBaiHat"
 
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                                    {...register("loiBaiHat", {required: "Vui lòng nhập lyrics"})}
+                                />
+                                {errors.loiBaiHat && (
+                                    <span className="text-red-600 text-sm">{errors.loiBaiHat.message}</span>
+                                )}
+                            </div>
                         </div>
 
                         <div>

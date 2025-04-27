@@ -13,6 +13,7 @@ type Inputs = {
     audio_URL: string,
     anh:File,
     thoiLuong:number,
+    loiBaiHat:string,
     trangThai:boolean,
     ngayTao?: Date,
     ngayCapNhat?:Date
@@ -242,6 +243,20 @@ const SuaBaiHat = () => {
                                 />
                                 {errors.idCaSi && (
                                     <span className="text-red-600 text-sm">{errors.idCaSi.message}</span>
+                                )}
+                            </div>
+                            <div className="mb-5">
+                                <label htmlFor="loiBaiHat" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Lyrics
+                                </label>
+                                <textarea
+                                    id="loiBaiHat"
+
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                                    {...register("loiBaiHat", {required: "Vui lòng nhập lyrics"})}
+                                />
+                                {errors.loiBaiHat && (
+                                    <span className="text-red-600 text-sm">{errors.loiBaiHat.message}</span>
                                 )}
                             </div>
 

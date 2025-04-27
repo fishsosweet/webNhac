@@ -29,10 +29,10 @@ const SideBar = () => {
             <h2 className="text-center text-3xl font-bold py-4">Admin</h2>
             <ul className="space-y-5">
                 <li>
-                    <a href="#" className="flex items-center space-x-2 p-3 hover:bg-gray-700 rounded">
+                    <div  className="flex items-center space-x-2 p-3 hover:bg-gray-700 rounded">
                         <FaHome/>
-                        <span>Trang chính</span>
-                    </a>
+                        <Link to="/admin" className="block p-2 rounded"><span>Trang chính</span></Link>
+                    </div>
                 </li>
                 <li>
                     <button
