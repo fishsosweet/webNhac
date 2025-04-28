@@ -13,6 +13,11 @@ class TheLoaiController extends Controller
     {
         $this->theLoaiService = $theLoaiService;
     }
+    public function getTheloai($id)
+    {
+        $response = $this->theLoaiService->getID($id);
+        return $response;
+    }
 
     public function postTheLoai(Request $request)
     {

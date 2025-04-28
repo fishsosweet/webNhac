@@ -4,7 +4,7 @@ import Sidebar from '../SideBar';
 import { getListBaiHat,deleteBaiHat} from "../../../services/Admin/BaiHatService";
 import { Link } from "react-router-dom";
 import dayjs from 'dayjs';
-import YouTubeAudioPlayer from "../../../services/AudioSong.tsx";
+import YouTubeAudioPlayer from "../../../services/Admin/AudioSong.tsx";
 const ListBaiHat = () => {
     const [list, setList] = useState<any[]>([]);
     const [pageCount, setPageCount] = useState<number>(0);
@@ -65,6 +65,7 @@ const ListBaiHat = () => {
                         <th className="border border-black">Bài hát</th>
                         <th className="border border-black">Ảnh</th>
                         <th className="border border-black">Thời lượng</th>
+                        <th className="border border-black">VIP</th>
                         <th className="border border-black">Trạng thái</th>
                         <th className="border border-black">Cập nhật</th>
                         <th className="border border-black"></th>
@@ -88,11 +89,19 @@ const ListBaiHat = () => {
                                     </div>
                                 </td>
                                 <td className="bg-white text-black border border-black ">
-                                    <img src={`http://127.0.0.1:8000/${item.anh}`} className="w-[90px] h-[70px] m-auto p-2"
+                                    <img src={`http://127.0.0.1:8000/${item.anh}`}
+                                         className="w-[90px] h-[70px] m-auto p-2"
                                          alt="Poster"/>
                                 </td>
                                 <td className="bg-white text-black border border-black">
                                     {item.thoiluong} phút
+                                </td>
+                                <td className="bg-white text-black text-center border border-black p-5">
+                                    {item.vip === 1 ? (
+                                        <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">YES</span>
+                                    ) : (
+                                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">NO</span>
+                                    )}
                                 </td>
                                 <td className="bg-white text-black text-center border border-black">
                                     {item.trangthai === 1 ? (
@@ -101,7 +110,7 @@ const ListBaiHat = () => {
                                         <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">NO</span>
                                     )}
                                 </td>
-                                <td className="bg-white text-black border border-black">
+                                <td className="bg-white text-black border border-black p-2">
                                     {dayjs(item.updated_at).format('DD/MM/YYYY')}
                                 </td>
                                 <td className="p-2 border border-black">

@@ -20,6 +20,15 @@ const postTheLoai = async (theLoai: post) => {
     }
 }
 
+const getThongTinTheLoai = async (id: number) => {
+    try {
+        const res = await axiosInstance.get(`/auth/thongTinTheLoai/${id}`);
+        return res.data
+    } catch (error: any) {
+        const errorMessage = error.response?.data?.error || "Đã có lỗi xảy ra";
+        return {success: false, message: errorMessage};
+    }
+}
 const postSuaTheLoai = async (theLoai: post,id: number) => {
     try {
         const response = await axiosInstance.post(`/auth/postSuaTheLoai/${id}`, {
@@ -50,4 +59,4 @@ const deleteTheLoai = async (id: number) => {
     }
 };
 
-export {postTheLoai, getListTheLoai,postSuaTheLoai,deleteTheLoai};
+export {postTheLoai, getListTheLoai,postSuaTheLoai,deleteTheLoai,getThongTinTheLoai};

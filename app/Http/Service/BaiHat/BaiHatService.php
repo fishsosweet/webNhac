@@ -45,6 +45,8 @@ class BaiHatService extends Controller
                 'audio_url'=> $request->audio_URL,
                 'thoiluong' => $request->thoiLuong,
                 'trangthai'=>$request->trangThai,
+                'lyrics'=> $request->loiBaiHat,
+                'vip'=>$request->vip,
                 'anh'=> $pathanh,
                 'created_at' => $request->ngayTao,
             ]);
@@ -54,8 +56,10 @@ class BaiHatService extends Controller
         } catch (\Exception $exception) {
             return response()->json([
                 'error' => 'Thêm bài hát thất bại',
+                'message' => $exception->getMessage(),
             ], 500);
         }
+
     }
 
 
@@ -90,13 +94,15 @@ class BaiHatService extends Controller
             $baihat->trangthai = $request->trangThai;
             $baihat->thoiLuong = $request->thoiLuong;
             $baihat->lyrics= $request->loiBaiHat;
+            $baihat->vip= $request->vip;
             $baihat->anh =$pathanh;
             $baihat->updated_at = $request->ngayCapNhat;
             $baihat->save();
             return response()->json(['success' => 'Cập nhật bài hát thành công'], 200);
         } catch (\Exception $exception) {
             return response()->json([
-                'error' => 'Cập nhật bài hát thất bại'
+                'error' => 'Cập nhật bài hát thất bại',
+                'message' => $exception->getMessage(),
             ], 500);
         }
     }
@@ -105,7 +111,7 @@ class BaiHatService extends Controller
     public function list()
     {
         $BaiHat = Baihat::with(['casi:id,ten_casi', 'theloai:id,ten_theloai'])
-            ->select('id', 'title', 'audio_url','thoiluong','trangthai', 'anh', 'casi_id', 'theloai_id', 'updated_at')
+            ->select('id', 'title', 'audio_url','thoiluong','trangthai', 'anh', 'casi_id', 'theloai_id', 'updated_at','vip')
             ->paginate(10);
         if ($BaiHat->count() > 0)
             return response()->json($BaiHat, 201);
@@ -119,7 +125,8 @@ class BaiHatService extends Controller
             return response()->json($baihat);
         }catch (\Exception $exception) {
             return response()->json([
-                'error' =>"ID không tồn tại"
+                'error' =>"ID không tồn tại",
+                'message' => $exception->getMessage(),
             ], 500);
         }
     }
@@ -128,7 +135,7 @@ class BaiHatService extends Controller
     {
         $baihat = Baihat::find($id);
         if (!$baihat) {
-            return response()->json(['erorr' => 'Không tìm thấy bài hát'], 404);
+            return response()->json(['erorr' => 'Không tìm thấy bài hát',], 404);
         }
 
         $baihat->delete();

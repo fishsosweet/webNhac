@@ -20,6 +20,7 @@ class Baihat extends Model
         'luotxem',
         'thoiluong',
         'trangthai',
+        'vip',
         'created_at',
         'updated_at'
     ];

@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('anh', 255);
             $table->string('lyrics', 255);
             $table->integer('thoiluong');
-            $table->integer('luotxem');
+            $table->integer('luotxem')->nullable();
+            $table->integer('vip');
             $table->boolean('trangthai')->default(true);
             $table->timestamps();
 

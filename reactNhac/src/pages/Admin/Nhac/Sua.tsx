@@ -15,7 +15,7 @@ type Inputs = {
     thoiLuong:number,
     loiBaiHat:string,
     trangThai:boolean,
-    ngayTao?: Date,
+    vip:boolean,
     ngayCapNhat?:Date
 };
 
@@ -88,6 +88,9 @@ const SuaBaiHat = () => {
                 message: res.message
             });
             reset();
+            if (res.success) {
+                await getBaiHat();
+            }
         } catch (error) {
             setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
         }
@@ -133,9 +136,11 @@ const SuaBaiHat = () => {
     useEffect(() => {
         if (baiHat) {
             setValue('trangThai', baiHat.trangthai.toString());
+            setValue('vip', baiHat.vip.toString());
             setValue('tenBaiHat', baiHat.title);
             setValue('idTheLoai', baiHat.theloai_id);
             setValue('idCaSi', baiHat.casi_id);
+            setValue('loiBaiHat', baiHat.lyrics);
             setPreviewImage(baiHat.anh);
             updateAudioURL(baiHat.audio_url);
             setValue('thoiLuong', parseInt(baiHat.thoiluong));
@@ -245,6 +250,34 @@ const SuaBaiHat = () => {
                                     <span className="text-red-600 text-sm">{errors.idCaSi.message}</span>
                                 )}
                             </div>
+
+                            <div className="mb-5">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Vip</label>
+                                <div className="flex items-center gap-4">
+                                    <label className="inline-flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="1"
+                                            {...register("vip", {required: "Chọn trạng thái"})}
+                                            className="text-blue-600"
+                                        />
+                                        <span>Có</span>
+                                    </label>
+                                    <label className="inline-flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="0"
+                                            {...register("vip", {required: "Chọn trạng thái"})}
+                                            className="text-blue-600"
+                                        />
+                                        <span>Không</span>
+                                    </label>
+
+                                </div>
+                                {errors.vip && (
+                                    <span className="text-red-600 text-sm">{errors.vip.message}</span>
+                                )}
+                            </div>
                             <div className="mb-5">
                                 <label htmlFor="loiBaiHat" className="block text-sm font-medium text-gray-700 mb-1">
                                     Lyrics
@@ -277,7 +310,9 @@ const SuaBaiHat = () => {
                                 />
                                 {previewImage && (
                                     <div id="image_show" className="mt-2">
-                                        <img src={previewImage.startsWith('data:') ? previewImage : `http://127.0.0.1:8000/${previewImage}`} alt="Preview" className="h-40 object-cover rounded-md"/>
+                                        <img
+                                            src={previewImage.startsWith('data:') ? previewImage : `http://127.0.0.1:8000/${previewImage}`}
+                                            alt="Preview" className="h-40 object-cover rounded-md"/>
                                     </div>
                                 )}
                             </div>
@@ -349,7 +384,7 @@ const SuaBaiHat = () => {
                                 <input
                                     type="datetime-local"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                                    {...register("ngayCapNhat", {required: "Vui lòng chọn ngày tạo"})}
+                                    {...register("ngayCapNhat", {required: "Vui lòng chọn ngày"})}
                                 />
                                 {errors.ngayCapNhat && (
                                     <span className="text-red-600 text-sm">{errors.ngayCapNhat.message}</span>

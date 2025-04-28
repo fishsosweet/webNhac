@@ -1,11 +1,19 @@
-import { useState } from "react";
-import { FaHome, FaChartLine, FaCompactDisc, FaStar } from "react-icons/fa";
-
-import { RiPlayListAddLine } from "react-icons/ri";
+import { SetStateAction, useState} from "react";
+import {FaHome, FaChartLine, FaCompactDisc, FaStar} from "react-icons/fa";
+import {RiPlayListAddLine} from "react-icons/ri";
 import HeaderUser from "./TimKiem.tsx";
+import HomeUser from "./UserPage.tsx";
+import MusicPlayer from "./BaiHat.tsx";
 
 export default function SidebarUser() {
-    const [active, setActive] = useState("Khám Phá");
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentSong, setCurrentSong] = useState(null);
+
+    const handlePlaySong = (song: SetStateAction<null>) => {
+        setCurrentSong(song);
+        setIsPlaying(true);
+    };
+    const [active, setActive] = useState("");
 
     const menusTop = [
         { name: "Thư Viện", icon: <FaHome /> },
@@ -20,14 +28,14 @@ export default function SidebarUser() {
     ];
 
     return (
-        <div className="flex">
-            <div className="w-64 bg-[#251b39] text-white h-screen p-4 flex flex-col">
-                <div className="text-4xl font-bold mb-8 flex items-center gap-1 pl-3">
-                    <span className="text-blue-400 stroke-white">Z</span>
+        <div className="flex h-screen">
+            {/* Sidebar */}
+            <div className="w-64 bg-[#251b39] text-white flex flex-col fixed top-0 left-0 bottom-0 p-4">
+                <div className="text-4xl font-bold mb-8 flex items-center gap-1 pl-3 ">
+                    <span className="text-blue-400 stroke-white ">Z</span>
                     <span className="text-pink-400 stroke-white">i</span>
                     <span className="text-yellow-400 stroke-white">n</span>
                     <span className="text-green-400 stroke-white">g</span>
-
                     <span className="text-white ml-1 text-xl self-end">mp4</span>
                 </div>
 
@@ -46,7 +54,7 @@ export default function SidebarUser() {
                     ))}
                 </div>
 
-                <hr className="my-4 border-[#2f2739]"/>
+                <hr className="my-4 border-[#2f2739]" />
 
                 <div className="flex flex-col gap-2">
                     {menusBottom.map((menu) => (
@@ -72,15 +80,29 @@ export default function SidebarUser() {
 
                 <div className="mt-auto">
                     <button className="flex items-center gap-2 text-sm px-3 py-2 hover:bg-[#2f2739] w-full rounded-lg">
-                        <RiPlayListAddLine className="text-xl"/>
+                        <RiPlayListAddLine className="text-xl" />
                         Tạo playlist mới
                     </button>
                 </div>
             </div>
 
-            <div className="flex-1">
-                <HeaderUser/>
+            <div className="flex-1 flex flex-col ml-64">
+                <div className="flex-1 flex flex-col">
+                    <div className="fixed left-64 right-0 top-0 z-40">
+                        <HeaderUser/>
+                    </div>
+
+                    <div className="flex-1 mt-[65px] overflow-y-auto bg-[#2a1a40] pb-24">
+                        <HomeUser onPlaySong={handlePlaySong} />
+                    </div>
+
+                    {isPlaying && currentSong && (
+                        <div className="fixed left-64 right-0 bottom-0 z-50">
+                            <MusicPlayer song={currentSong} />
+                        </div>
+                    )}
+                </div>
             </div>
-            </div>
-            );
-            }
+        </div>
+    );
+}

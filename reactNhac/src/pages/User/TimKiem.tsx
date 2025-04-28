@@ -2,8 +2,7 @@ import {FaSearch, FaDownload, FaCog } from "react-icons/fa";
 
 export default function HeaderUser() {
     return (
-        <div className="flex items-center justify-between px-4 py-2 bg-[#170f23] h-[65px]">
-
+        <div className="flex items-center justify-between px-4 py-2 bg-[#1a152b] h-[65px] backdrop-blur-md ">
             <div className="flex-1 mx-4 px-30">
                 <div className="flex items-center bg-[#2f2739] rounded-full px-4 py-2">
                     <FaSearch className="text-gray-400 mr-2" />
@@ -26,7 +25,6 @@ export default function HeaderUser() {
                     <FaCog className="text-white" />
                 </button>
                 <img
-                    src="https://via.placeholder.com/32"
                     alt="avatar"
                     className="w-8 h-8 rounded-full object-cover"
                 />

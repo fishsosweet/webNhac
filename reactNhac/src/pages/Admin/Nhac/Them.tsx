@@ -14,6 +14,7 @@ type Inputs = {
     loiBaiHat: string,
     thoiLuong:number,
     trangThai:boolean,
+    vip:boolean,
     ngayTao: Date,
 };
 
@@ -200,6 +201,33 @@ const BaiHat = () => {
                                 )}
                             </div>
                             <div className="mb-5">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Vip</label>
+                                <div className="flex items-center gap-4">
+                                    <label className="inline-flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="1"
+                                            {...register("vip", {required: "Chọn trạng thái"})}
+                                            className="text-blue-600"
+                                        />
+                                        <span>Có</span>
+                                    </label>
+                                    <label className="inline-flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="0"
+                                            {...register("vip", {required: "Chọn trạng thái"})}
+                                            className="text-blue-600"
+                                        />
+                                        <span>Không</span>
+                                    </label>
+
+                                </div>
+                                {errors.vip && (
+                                    <span className="text-red-600 text-sm">{errors.vip.message}</span>
+                                )}
+                            </div>
+                            <div className="mb-5">
                                 <label htmlFor="loiBaiHat" className="block text-sm font-medium text-gray-700 mb-1">
                                     Lyrics
                                 </label>
@@ -242,7 +270,7 @@ const BaiHat = () => {
                                     type="text"
                                     id="audioURL"
                                     value={audioURL}
-                                    {...register("audio_URL", { required: "Vui lòng nhập link YouTube" })}
+                                    {...register("audio_URL", {required: "Vui lòng nhập link YouTube" })}
                                     onChange={handleAudioChange}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md"
                                     placeholder="Nhập link YouTube"

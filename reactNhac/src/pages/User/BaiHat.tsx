@@ -1,0 +1,192 @@
+import  { useEffect, useRef, useState } from "react";
+import { FaHeart, FaRandom, FaStepBackward, FaPlay, FaPause, FaStepForward, FaRedo, FaVolumeUp } from "react-icons/fa";
+import { FiMoreHorizontal } from "react-icons/fi";
+import { MdOutlineOndemandVideo, MdOutlineLyrics, MdOutlineFullscreen } from "react-icons/md";
+import {loadYouTubeAPI} from "../../services/Admin/APIAudioSong.tsx";
+
+interface Song {
+    id: number;
+    title: string;
+    anh: string;
+    casi: {
+        ten_casi: string;
+    };
+    audio_url: string;
+}
+
+interface MusicPlayerProps {
+    song: Song;
+}
+
+declare global {
+    interface Window {
+        onYouTubeIframeAPIReady: () => void;
+        YT: typeof YT;
+    }
+}
+
+export default function MusicPlayer({ song }: MusicPlayerProps) {
+    const playerRef = useRef<YT.Player | null>(null);
+    const playerContainerRef = useRef<HTMLDivElement | null>(null);
+    const [isReady, setIsReady] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [duration, setDuration] = useState(0);
+    const [currentTime, setCurrentTime] = useState(0);
+
+    const extractVideoId = (url: string): string | null => {
+        const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+        return match ? match[1] : null;
+    };
+
+    const videoId = extractVideoId(song.audio_url);
+
+    useEffect(() => {
+        const initPlayer = async () => {
+            await loadYouTubeAPI();
+
+            if (!playerContainerRef.current || !videoId) return;
+
+            if (playerRef.current) {
+                playerRef.current.destroy();
+                playerRef.current = null;
+            }
+
+            playerRef.current = new window.YT.Player(playerContainerRef.current, {
+                height: '0',
+                width: '0',
+                videoId,
+                playerVars: {
+                    controls: 0,
+                    autoplay: 0,
+                    modestbranding: 1,
+                    disablekb: 1,
+                },
+                events: {
+                    onReady: (event) => {
+                        const player = event.target;
+                        setTimeout(() => {
+                            setDuration(player.getDuration());
+                            setIsReady(true);
+                            player.playVideo();
+                            setIsPlaying(true);
+                        }, 500);
+                    },
+                },
+            });
+        };
+
+        setIsReady(false);
+        initPlayer();
+
+        return () => {
+            if (playerRef.current?.destroy) {
+                playerRef.current.destroy();
+                playerRef.current = null;
+            }
+        };
+    }, [videoId]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+                setCurrentTime(playerRef.current.getCurrentTime());
+            }
+        }, 500);
+
+        return () => clearInterval(interval);
+    }, [isReady]);
+
+    const togglePlay = () => {
+        const player = playerRef.current;
+        if (!player || !isReady) {
+            return;
+        }
+
+        if (isPlaying) {
+            player.pauseVideo();
+        } else {
+            player.playVideo();
+        }
+        setIsPlaying(!isPlaying);
+    };
+    const formatTime = (time: number): string => {
+        const min = Math.floor(time / 60);
+        const sec = Math.floor(time % 60).toString().padStart(2, '0');
+        return `${min}:${sec}`;
+    };
+
+    return (
+        <div className="bg-[#120f19] p-4 flex items-center justify-between rounded-2xl shadow-lg relative">
+
+            <div ref={playerContainerRef} style={{ display: 'none' }} />
+
+            <div className="flex items-center gap-4 w-[300px]">
+                <img
+                    src={`http://127.0.0.1:8000/${song.anh}`}
+                    alt="Album Cover"
+                    className="w-16 h-16 rounded-md object-cover"
+                />
+                <div>
+                    <h3 className="text-white font-semibold truncate max-w-[150px]">{song.title}</h3>
+                    <p className="text-sm text-gray-400 truncate max-w-[150px]">{song.casi?.ten_casi}</p>
+                </div>
+                <button className="text-white text-xl ml-2"><FaHeart /></button>
+                <button className="text-white text-xl"><FiMoreHorizontal /></button>
+            </div>
+
+            <div className="flex flex-col items-center flex-1 px-10">
+                <div className="flex items-center gap-5 mb-2">
+                    <button className="text-white"><FaRandom /></button>
+                    <button className="text-white"><FaStepBackward /></button>
+
+                    <button
+                        onClick={togglePlay}
+                        disabled={!isReady}
+                        className={`w-10 h-10 flex items-center justify-center rounded-full border-2 cursor-pointer ${isReady ? "border-purple-500 text-purple-500" : "border-gray-500 text-gray-500"}`}
+                    >
+                        {isPlaying ? <FaPause /> : <FaPlay />}
+                    </button>
+
+                    <button className="text-white"><FaStepForward /></button>
+                    <button className="text-white"><FaRedo /></button>
+                </div>
+                <div className="flex items-center w-[520px] gap-3">
+                    <span className="text-sm text-gray-400">{formatTime(currentTime)}</span>
+
+                    <div className="flex-1 h-1 bg-gray-700 rounded relative cursor-pointer overflow-hidden"
+                         onClick={(e) => {
+                             if (!isReady || !playerRef.current) return;
+                             const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+                             const clickX = e.clientX - rect.left;
+                             const newTime = (clickX / rect.width) * duration;
+                             playerRef.current.seekTo(newTime, true);
+
+                         }}
+                    >
+                        <div
+                            className="h-full bg-white rounded transition-all duration-300"
+                            style={{width: duration ? `${(currentTime / duration) * 100}%` : '0%'}}
+                        />
+                    </div>
+
+
+                    <span className="text-sm text-gray-400">{formatTime(duration)}</span>
+                </div>
+
+            </div>
+
+            {/* Các nút phụ */}
+            <div className="flex items-center gap-4">
+                <button className="text-white"><MdOutlineOndemandVideo size={20}/></button>
+                <button className="text-white"><MdOutlineLyrics size={20}/></button>
+                <button className="text-white"><MdOutlineFullscreen size={20}/></button>
+                <div className="flex items-center gap-2">
+                    <FaVolumeUp className="text-white"/>
+                    <div className="w-24 h-1 bg-gray-700 rounded">
+                        <div className="h-full bg-white w-2/3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

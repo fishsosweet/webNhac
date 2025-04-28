@@ -3,6 +3,7 @@
 namespace App\Http\Service\TheLoai;
 
 use App\Http\Controllers\Controller;
+use App\Models\Casi;
 use App\Models\TheLoai;
 
 class TheLoaiService extends Controller
@@ -20,7 +21,21 @@ class TheLoaiService extends Controller
             ], 201);
         } catch (\Exception $exception) {
             return response()->json([
-                'error' => 'Thêm thể loại thất bại'
+                'error' => 'Thêm thể loại thất bại',
+                'message' => $exception->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getID($id)
+    {
+        try {
+            $theloai = TheLoai::find($id);
+            return response()->json($theloai);
+        }catch (\Exception $exception) {
+            return response()->json([
+                'error' =>"ID không tồn tại",
+                'message' => $exception->getMessage(),
             ], 500);
         }
     }
@@ -49,7 +64,8 @@ class TheLoaiService extends Controller
             return response()->json(['success' => 'Cập nhật thể loại thành công'], 200);
         } catch (\Exception $exception) {
             return response()->json([
-                'error' => 'Cập nhật thể loại thất bại'
+                'error' => 'Cập nhật thể loại thất bại',
+                'message' => $exception->getMessage(),
             ], 500);
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Service\CaSi;
 
 use App\Http\Controllers\Controller;
+use App\Models\Baihat;
 use App\Models\Casi;
 use App\Models\TheLoai;
 
@@ -39,6 +40,7 @@ class CaSiService extends Controller
         } catch (\Exception $exception) {
             return response()->json([
                 'error' => 'Thêm ca sĩ thất bại',
+                'message' => $exception->getMessage(),
             ], 500);
         }
     }
@@ -75,7 +77,8 @@ class CaSiService extends Controller
             return response()->json(['success' => 'Cập nhật ca sĩ thành công'], 200);
         } catch (\Exception $exception) {
             return response()->json([
-                'error' => 'Cập nhật ca sĩ thất bại'
+                'error' => 'Cập nhật ca sĩ thất bại',
+                'message' => $exception->getMessage(),
             ], 500);
         }
     }
@@ -98,5 +101,18 @@ class CaSiService extends Controller
 
         $casi->delete();
         return response()->json(['success' => 'Xóa thành công']);
+    }
+
+    public function getID($id)
+    {
+        try {
+            $casi = Casi::find($id);
+            return response()->json($casi);
+        }catch (\Exception $exception) {
+            return response()->json([
+                'error' =>"ID không tồn tại",
+                'message' => $exception->getMessage(),
+            ], 500);
+        }
     }
 }

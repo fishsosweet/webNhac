@@ -1,8 +1,8 @@
 
 import Sidebar from '../SideBar';
 import {SubmitHandler, useForm} from "react-hook-form";
-import {postSuaTheLoai} from "../../../services/Admin/TheLoaiService.tsx";
-import {useState} from "react";
+import {getThongTinTheLoai, postSuaTheLoai} from "../../../services/Admin/TheLoaiService.tsx";
+import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 type Inputs = {
     tenTheLoai: string,
@@ -10,8 +10,9 @@ type Inputs = {
     ngayCapNhat: Date
 };
 const SuaTheLoai = () => {
+    const [theLoai,setTheLoai] =useState<any>(null);
     const [thongBao, setThongBao] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-    const { register, handleSubmit,reset, formState: { errors } } = useForm<Inputs>();
+    const { register, handleSubmit,reset,setValue, formState: { errors } } = useForm<Inputs>();
     const { id } = useParams();
     const themTheLoai: SubmitHandler<Inputs> = async (data) => {
         try {
@@ -21,6 +22,9 @@ const SuaTheLoai = () => {
                 message: res.message
             });
             reset();
+            if (res.success) {
+                await getTheLoai();
+            }
         }
         catch (error: any){
             console.error("Lỗi cập nhật:", error);
@@ -32,8 +36,26 @@ const SuaTheLoai = () => {
             });
         }
     }
-
-
+    const getTheLoai=async ()=>{
+        try{
+            const res = await getThongTinTheLoai(parseInt(id!));
+            if (res) {
+                setTheLoai(res);
+            }
+        }
+        catch (error){
+            setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
+        }
+    }
+    useEffect(() => {
+        getTheLoai();
+    }, []);
+    useEffect(() => {
+        if (theLoai) {
+            setValue('tenTheLoai', theLoai.ten_theloai);
+            setValue('trangThai', theLoai.trangthai.toString());
+        }
+    }, [theLoai]);
     return (
         <div className="flex">
             <Sidebar/>
@@ -71,7 +93,7 @@ const SuaTheLoai = () => {
                                     <input
                                         className="custom-control-input"
                                         type="radio"
-                                        id="active"
+
                                         value="1"
                                         {...register("trangThai", { required: "Chọn trạng thái" })}
                                     />
@@ -81,7 +103,6 @@ const SuaTheLoai = () => {
                                     <input
                                         className="custom-control-input"
                                         type="radio"
-                                        id="active"
                                         value="0"
                                         {...register("trangThai", { required: "Chọn trạng thái" })}
                                     />

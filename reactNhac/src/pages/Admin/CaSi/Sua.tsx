@@ -1,7 +1,7 @@
 import Sidebar from '../SideBar';
 import {SubmitHandler, useForm} from "react-hook-form";
-import {postSuaCaSi} from "../../../services/Admin/CaSiService.tsx";
-import {useState} from "react";
+import {getThongTinCaSi, postSuaCaSi} from "../../../services/Admin/CaSiService.tsx";
+import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 
 type Inputs = {
@@ -12,6 +12,7 @@ type Inputs = {
     ngayCapNhat: Date,
 };
 const SuaCaSi = () => {
+    const [caSi,setCaSi] =useState<any>(null);
     const { id } = useParams();
     const [thongBao, setThongBao] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const {register, handleSubmit, reset, formState: {errors},setValue} = useForm<Inputs>();
@@ -24,12 +25,35 @@ const SuaCaSi = () => {
                 message: res.message
             });
             reset();
+            if (res.success) {
+                await getCaSi();
+            }
         } catch (error) {
             setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
         }
     }
-
-
+    const getCaSi=async ()=>{
+        try{
+            const res = await getThongTinCaSi(parseInt(id!));
+            if (res) {
+                setCaSi(res);
+            }
+        }
+        catch (error){
+            setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
+        }
+    }
+    useEffect(() => {
+        getCaSi();
+    }, []);
+    useEffect(() => {
+        if (caSi) {
+            setValue('tenCaSi', caSi.ten_casi);
+            setValue('gioiTinh', caSi.gioitinh);
+            setValue('moTa', caSi.mota);
+            setPreviewImage(caSi.anh);
+        }
+    }, [caSi]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -134,7 +158,7 @@ const SuaCaSi = () => {
                                 />
                                 {previewImage && (
                                     <div id="image_show" className="mt-2">
-                                        <img src={previewImage} alt="Preview" className="h-40 object-cover rounded-md"/>
+                                        <img src={previewImage.startsWith('data:') ? previewImage : `http://127.0.0.1:8000/${previewImage}`} alt="Preview" className="h-40 object-cover rounded-md"/>
                                     </div>
                                 )}
                             </div>
@@ -147,7 +171,7 @@ const SuaCaSi = () => {
                                     type="datetime-local"
                                     id="created_at"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                                    {...register("ngayCapNhat", {required: "Vui lòng chọn ngày cập nhật"})}
+                                    {...register("ngayCapNhat", {required: "Vui lòng chọn ngày"})}
                                 />
                                 {errors.ngayCapNhat && (
                                     <span className="text-red-600 text-sm">{errors.ngayCapNhat.message}</span>

@@ -32,6 +32,15 @@ const postCaSi = async (casi: post) => {
     }
 };
 
+const getThongTinCaSi = async (id: number) => {
+    try {
+        const res = await axiosInstance.get(`/auth/thongTinCaSi/${id}`);
+        return res.data
+    } catch (error: any) {
+        const errorMessage = error.response?.data?.error || "Đã có lỗi xảy ra";
+        return {success: false, message: errorMessage};
+    }
+}
 const postSuaCaSi = async (casi: post,id: number) => {
     try {
         const formData = new FormData();
@@ -71,4 +80,4 @@ const deleteCaSi = async (id: number) => {
 };
 
 
-export {postCaSi,getListCaSi,deleteCaSi,postSuaCaSi};
+export {postCaSi,getListCaSi,deleteCaSi,postSuaCaSi,getThongTinCaSi};

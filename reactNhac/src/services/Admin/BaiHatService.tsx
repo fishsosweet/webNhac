@@ -9,6 +9,7 @@ type post = {
     thoiLuong:number,
     trangThai:boolean,
     loiBaiHat:string,
+    vip:boolean,
     ngayTao?: Date,
     ngayCapNhat?:Date
 };
@@ -50,6 +51,7 @@ const postBaiHat = async (baihat: post) => {
         formData.append('idTheLoai', baihat.idTheLoai);
         formData.append('audio_URL', baihat.audio_URL);
         formData.append('trangThai', baihat.trangThai.toString());
+        formData.append('vip', baihat.vip.toString());
         formData.append('loiBaiHat', baihat.loiBaiHat);
         formData.append('thoiLuong', baihat.thoiLuong.toString());
         formData.append('anh', baihat.anh);
@@ -78,6 +80,7 @@ const postSuaBaiHat = async (baihat: post,id: number) => {
         formData.append('audio_URL', baihat.audio_URL);
         formData.append('trangThai', baihat.trangThai.toString());
         formData.append('loiBaiHat', baihat.loiBaiHat);
+        formData.append('vip', baihat.vip.toString());
         formData.append('thoiLuong', baihat.thoiLuong.toString());
         formData.append('anh', baihat.anh);
         // @ts-ignore

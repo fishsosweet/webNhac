@@ -6,6 +6,7 @@ use \App\Http\Controllers\Admin\Login\apiLoginAdmin;
 use \App\Http\Controllers\Admin\TheLoai\TheLoaiController;
 use \App\Http\Controllers\Admin\CaSi\CaSiController;
 use \App\Http\Controllers\Admin\BaiHat\BaiHatController;
+use \App\Http\Controllers\User\TrangChu\TrangChuController;
 /*Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');*/
@@ -19,11 +20,13 @@ Route::group([
     Route::post('postTheLoai', [TheLoaiController::class, 'postTheLoai']);
     Route::get('getListTheLoai', [TheLoaiController::class, 'getList']);
     Route::post('postSuaTheLoai/{id}', [TheLoaiController::class, 'postCapNhatTheLoai']);
+    Route::get('thongTinTheLoai/{id}', [TheLoaiController::class, 'getTheloai']);
     Route::delete('deleteTheLoai/{id}', [TheLoaiController::class, 'delete']);
     //CaSi
     Route::post('postCaSi', [CaSiController::class,'postCaSi']);
     Route::get('getListCaSi', [CaSiController::class, 'getList']);
     Route::post('postSuaCaSi/{id}', [CaSiController::class, 'postCapNhatCaSi']);
+    Route::get('thongTinCaSi/{id}', [CaSiController::class, 'getCaSi']);
     Route::delete('deleteCaSi/{id}', [CaSiController::class, 'delete']);
     //BaiHat
     Route::get('dsTheLoai', [BaiHatController::class, 'getTheLoai']);
@@ -33,4 +36,9 @@ Route::group([
     Route::get('getListBaiHat', [BaiHatController::class, 'getList']);
     Route::post('postSuaBaiHat/{id}', [BaiHatController::class, 'postCapNhatBaiHat']);
     Route::delete('deleteBaiHat/{id}', [BaiHatController::class, 'delete']);
+});
+
+Route::prefix('user')->group(function () {
+    //TrangChu
+    Route::get('getRandomSongs', [TrangChuController::class, 'getRandomSongs']);
 });

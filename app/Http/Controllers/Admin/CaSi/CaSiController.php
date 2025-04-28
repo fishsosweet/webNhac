@@ -31,4 +31,10 @@ class CaSiController extends Controller
         $response=$this->caSiService->destroy($id);
         return $response;
     }
+
+    public function getCaSi($id)
+    {
+        $response = $this->caSiService->getID($id);
+        return $response;
+    }
 }
