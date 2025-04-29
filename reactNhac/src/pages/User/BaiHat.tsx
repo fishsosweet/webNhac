@@ -1,8 +1,15 @@
-import  { useEffect, useRef, useState } from "react";
-import { FaHeart, FaRandom, FaStepBackward, FaPlay, FaPause, FaStepForward, FaRedo, FaVolumeUp } from "react-icons/fa";
+import { useEffect, useRef, useState, useMemo } from "react";
+import {
+    FaHeart, FaStepBackward, FaPlay, FaPause,
+    FaStepForward, FaVolumeUp
+} from "react-icons/fa";
 import { FiMoreHorizontal } from "react-icons/fi";
-import { MdOutlineOndemandVideo, MdOutlineLyrics, MdOutlineFullscreen } from "react-icons/md";
-import {loadYouTubeAPI} from "../../services/Admin/APIAudioSong.tsx";
+import {
+    MdOutlineOndemandVideo, MdOutlineLyrics,
+    MdOutlineFullscreen
+} from "react-icons/md";
+import { loadYouTubeAPI } from "../../services/Admin/APIAudioSong.tsx";
+import { getDSPhat } from "../../services/User/TrangChuService.tsx";
 
 interface Song {
     id: number;
@@ -32,13 +39,48 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+    const [currentSong, setCurrentSong] = useState<Song>(song);
+    const [playlist, setPlaylist] = useState<Song[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     const extractVideoId = (url: string): string | null => {
         const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
         return match ? match[1] : null;
     };
 
-    const videoId = extractVideoId(song.audio_url);
+    const videoId = useMemo(() => extractVideoId(currentSong.audio_url), [currentSong.audio_url]);
+
+    const fetchNextSongs = async (excludeIds: number[] = []) => {
+        try {
+            const response = await getDSPhat(excludeIds);
+            if (Array.isArray(response.data)) {
+                setPlaylist(response.data);
+                setCurrentIndex(0);
+            }
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách nhạc:", error);
+        }
+    };
+    useEffect(() => {
+        if (!song) return;
+
+        setCurrentSong({ ...song }); // force trigger bằng object mới
+        setPlaylist((prev) => {
+            const remaining = prev.filter(s => s.id !== song.id);
+            return [song, ...remaining];
+        });
+        setCurrentIndex(0);
+    }, [song]);
+
+
+
+
+    useEffect(() => {
+        if (playlist.length > 0) {
+            setCurrentIndex(0);
+            setCurrentSong(playlist[0]);
+        }
+    }, [playlist]);
 
     useEffect(() => {
         const initPlayer = async () => {
@@ -64,6 +106,7 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
                 events: {
                     onReady: (event) => {
                         const player = event.target;
+
                         setTimeout(() => {
                             setDuration(player.getDuration());
                             setIsReady(true);
@@ -71,7 +114,12 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
                             setIsPlaying(true);
                         }, 500);
                     },
-                },
+                    onStateChange: (event) => {
+                        if (event.data === window.YT.PlayerState.ENDED) {
+                            handleSongEnd();
+                        }
+                    }
+                }
             });
         };
 
@@ -79,56 +127,90 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
         initPlayer();
 
         return () => {
-            if (playerRef.current?.destroy) {
-                playerRef.current.destroy();
-                playerRef.current = null;
-            }
+            playerRef.current?.destroy();
+            playerRef.current = null;
         };
     }, [videoId]);
 
+    const handleSongEnd = () => {
+        const playedIds = [currentSong.id, ...playlist.map(s => s.id)];
+
+        if (playlist.length > 0 && currentIndex < playlist.length - 1) {
+            const nextIndex = currentIndex + 1;
+            setCurrentIndex(nextIndex);
+            setCurrentSong(playlist[nextIndex]);
+        } else {
+            fetchNextSongs(playedIds);
+        }
+    };
+
+
     useEffect(() => {
         const interval = setInterval(() => {
-            if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+            if (playerRef.current?.getCurrentTime) {
                 setCurrentTime(playerRef.current.getCurrentTime());
             }
         }, 500);
-
         return () => clearInterval(interval);
     }, [isReady]);
 
     const togglePlay = () => {
-        const player = playerRef.current;
-        if (!player || !isReady) {
-            return;
-        }
+        if (!playerRef.current || !isReady) return;
 
         if (isPlaying) {
-            player.pauseVideo();
+            playerRef.current.pauseVideo();
         } else {
-            player.playVideo();
+            playerRef.current.playVideo();
         }
         setIsPlaying(!isPlaying);
     };
+
     const formatTime = (time: number): string => {
         const min = Math.floor(time / 60);
         const sec = Math.floor(time % 60).toString().padStart(2, '0');
         return `${min}:${sec}`;
     };
 
+
+    const handlePrevSong = () => {
+        if (!playerRef.current) return;
+
+        if (playlist.length > 0 && currentIndex > 0) {
+            const prevIndex = currentIndex - 1;
+            setCurrentIndex(prevIndex);
+            setCurrentSong(playlist[prevIndex]);
+        } else {
+            playerRef.current.seekTo(0, true);
+            playerRef.current.playVideo();
+        }
+    };
+
+
+    const handleNextSong = () => {
+        if (playlist.length > 0 && currentIndex < playlist.length - 1) {
+            const nextIndex = currentIndex + 1;
+            setCurrentIndex(nextIndex);
+            setCurrentSong(playlist[nextIndex]);
+        } else {
+            const playedIds = [currentSong.id, ...playlist.map(s => s.id)];
+            fetchNextSongs(playedIds);
+        }
+    };
+
+
     return (
         <div className="bg-[#120f19] p-4 flex items-center justify-between rounded-2xl shadow-lg relative">
-
             <div ref={playerContainerRef} style={{ display: 'none' }} />
 
             <div className="flex items-center gap-4 w-[300px]">
                 <img
-                    src={`http://127.0.0.1:8000/${song.anh}`}
+                    src={`http://127.0.0.1:8000/${currentSong.anh}`}
                     alt="Album Cover"
                     className="w-16 h-16 rounded-md object-cover"
                 />
                 <div>
-                    <h3 className="text-white font-semibold truncate max-w-[150px]">{song.title}</h3>
-                    <p className="text-sm text-gray-400 truncate max-w-[150px]">{song.casi?.ten_casi}</p>
+                    <h3 className="text-white font-semibold truncate max-w-[150px]">{currentSong.title}</h3>
+                    <p className="text-sm text-gray-400 truncate max-w-[150px]">{currentSong.casi?.ten_casi}</p>
                 </div>
                 <button className="text-white text-xl ml-2"><FaHeart /></button>
                 <button className="text-white text-xl"><FiMoreHorizontal /></button>
@@ -136,46 +218,38 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
 
             <div className="flex flex-col items-center flex-1 px-10">
                 <div className="flex items-center gap-5 mb-2">
-                    <button className="text-white"><FaRandom /></button>
-                    <button className="text-white"><FaStepBackward /></button>
 
+                    <button className="text-white" onClick={handlePrevSong}><FaStepBackward/></button>
                     <button
                         onClick={togglePlay}
                         disabled={!isReady}
                         className={`w-10 h-10 flex items-center justify-center rounded-full border-2 cursor-pointer ${isReady ? "border-purple-500 text-purple-500" : "border-gray-500 text-gray-500"}`}
                     >
-                        {isPlaying ? <FaPause /> : <FaPlay />}
+                        {isPlaying ? <FaPause/> : <FaPlay/>}
                     </button>
-
-                    <button className="text-white"><FaStepForward /></button>
-                    <button className="text-white"><FaRedo /></button>
+                    <button className="text-white" onClick={handleNextSong}><FaStepForward/></button>
                 </div>
                 <div className="flex items-center w-[520px] gap-3">
                     <span className="text-sm text-gray-400">{formatTime(currentTime)}</span>
-
-                    <div className="flex-1 h-1 bg-gray-700 rounded relative cursor-pointer overflow-hidden"
-                         onClick={(e) => {
-                             if (!isReady || !playerRef.current) return;
-                             const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-                             const clickX = e.clientX - rect.left;
-                             const newTime = (clickX / rect.width) * duration;
-                             playerRef.current.seekTo(newTime, true);
-
-                         }}
+                    <div
+                        className="flex-1 h-1 bg-gray-700 rounded relative cursor-pointer overflow-hidden"
+                        onClick={(e) => {
+                            if (!isReady || !playerRef.current) return;
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const clickX = e.clientX - rect.left;
+                            const newTime = (clickX / rect.width) * duration;
+                            playerRef.current.seekTo(newTime, true);
+                        }}
                     >
                         <div
                             className="h-full bg-white rounded transition-all duration-300"
                             style={{width: duration ? `${(currentTime / duration) * 100}%` : '0%'}}
                         />
                     </div>
-
-
                     <span className="text-sm text-gray-400">{formatTime(duration)}</span>
                 </div>
-
             </div>
 
-            {/* Các nút phụ */}
             <div className="flex items-center gap-4">
                 <button className="text-white"><MdOutlineOndemandVideo size={20}/></button>
                 <button className="text-white"><MdOutlineLyrics size={20}/></button>

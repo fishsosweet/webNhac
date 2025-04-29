@@ -8,5 +8,7 @@ const getDSBaiRandom =async ()=>{
         return {error: "Load thất bại!"};
     }
 }
-
-export {getDSBaiRandom}
+const getDSPhat = async (excludeIds: number[] = []) => {
+    return axiosInstance.post("/user/nextSongs", { exclude: excludeIds });
+};
+export {getDSBaiRandom,getDSPhat}

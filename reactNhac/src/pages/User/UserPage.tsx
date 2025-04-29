@@ -32,7 +32,7 @@ export default function HomeUser({ onPlaySong }: { onPlaySong: (song: any) => vo
         getBaiHatRandom();
     }, []);
     return (
-        <div className="p-15 bg-[#170f23] min-h-screen text-white">
+        <div className="p-15 bg-[#170f23] text-white">
             {/*<section className="mb-10">*/}
             {/*    <div className="flex justify-between items-center mb-4">*/}
             {/*        <h2 className="text-2xl font-bold">Nghe Gần Đây</h2>*/}

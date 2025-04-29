@@ -41,4 +41,5 @@ Route::group([
 Route::prefix('user')->group(function () {
     //TrangChu
     Route::get('getRandomSongs', [TrangChuController::class, 'getRandomSongs']);
+    Route::post('nextSongs', [TrangChuController::class, 'getNextSongs']);
 });
