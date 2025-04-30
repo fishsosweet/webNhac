@@ -11,21 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('casi', function (Blueprint $table) {
+        Schema::create('playlists', function (Blueprint $table) {
             $table->id();
-            $table->string('ten_casi', 100);
-            $table->string('gioitinh', 10);
-            $table->text('mota')->nullable();
+            $table->string('ten_playlist');
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->boolean('trangthai')->default(true);
             $table->string('anh')->nullable();
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('casi');
+        Schema::dropIfExists('playlists');
     }
 };

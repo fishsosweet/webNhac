@@ -20,6 +20,8 @@ import UserPage from "./pages/UserPage.tsx";
 import AdminPage from "./pages/Admin/AdminPage.tsx";
 import SuaTheLoai from "./pages/Admin/TheLoai/Sua.tsx";
 import SidebarUser from "./pages/User/SideBar.tsx"
+import Playlist from "./pages/Admin/Playlist/Them.tsx";
+import ListPlaylist from "./pages/Admin/Playlist/List.tsx";
 
 const router = createBrowserRouter([
     {
@@ -61,6 +63,12 @@ const router = createBrowserRouter([
         </PrivateRoute>
     },
     {
+        path: "/admin/add-playlists",
+        element:  <PrivateRoute>
+            <Playlist />
+        </PrivateRoute>
+    },
+    {
         path: "/admin/list-categories",
         element:  <PrivateRoute>
             <ListTheLoai />
@@ -76,6 +84,12 @@ const router = createBrowserRouter([
         path: "/admin/list-songs",
         element:  <PrivateRoute>
             <ListBaiHat />
+        </PrivateRoute>
+    },
+    {
+        path: "/admin/list-playlists",
+        element:  <PrivateRoute>
+            <ListPlaylist />
         </PrivateRoute>
     },
     {

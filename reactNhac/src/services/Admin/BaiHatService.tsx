@@ -115,6 +115,31 @@ const deleteBaiHat = async (id: number) => {
         throw error.response?.data || error;
     }
 };
+const openPlaylist = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axiosInstance.get('/auth/choosePlaylists', {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return response.data
+    } catch (error) {
+        alert("Không thể lấy danh sách playlist.");
+    }
+};
 
+const addSongToPlaylist = async (playlistId: number, selectedSongId: number | null) => {
+    try {
+        const response = await axiosInstance.post('/auth/addBaiHatList', {
+            playlist_id: playlistId,
+            song_id: selectedSongId,
+        });
+        return response.data
+    } catch (error) {
+        alert('Lỗi khi thêm bài hát');
+    }
+};
 
-export {postBaiHat,getListBaiHat,deleteBaiHat,postSuaBaiHat,getDSTheLoai,getDSCaSi,getThongTinBaiHat};
+export {postBaiHat,getListBaiHat,deleteBaiHat,postSuaBaiHat,getDSTheLoai,getDSCaSi,getThongTinBaiHat,openPlaylist,addSongToPlaylist};

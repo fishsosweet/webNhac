@@ -1,7 +1,7 @@
 import Sidebar from '../SideBar';
 import {SubmitHandler, useForm} from "react-hook-form";
 import {postCaSi} from "../../../services/Admin/CaSiService.tsx";
-import {useState} from "react";
+import {useState,useEffect} from "react";
 
 type Inputs = {
     tenCaSi: string,
@@ -42,6 +42,12 @@ const CaSi = () => {
     };
 
 
+    useEffect(() => {
+        if (thongBao) {
+            const timer = setTimeout(() => setThongBao(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [thongBao]);
 
     return (
         <div className="flex">

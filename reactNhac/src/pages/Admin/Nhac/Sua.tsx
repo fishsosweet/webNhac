@@ -147,6 +147,12 @@ const SuaBaiHat = () => {
         }
     }, [baiHat]);
 
+    useEffect(() => {
+        if (thongBao) {
+            const timer = setTimeout(() => setThongBao(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [thongBao]);
 
     return (
         <div className="flex">

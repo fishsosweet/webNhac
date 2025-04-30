@@ -7,6 +7,7 @@ use \App\Http\Controllers\Admin\TheLoai\TheLoaiController;
 use \App\Http\Controllers\Admin\CaSi\CaSiController;
 use \App\Http\Controllers\Admin\BaiHat\BaiHatController;
 use \App\Http\Controllers\User\TrangChu\TrangChuController;
+use \App\Http\Controllers\Admin\Playlist\PlaylistController;
 /*Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');*/
@@ -36,6 +37,12 @@ Route::group([
     Route::get('getListBaiHat', [BaiHatController::class, 'getList']);
     Route::post('postSuaBaiHat/{id}', [BaiHatController::class, 'postCapNhatBaiHat']);
     Route::delete('deleteBaiHat/{id}', [BaiHatController::class, 'delete']);
+    Route::get('choosePlaylists', [BaiHatController::class, 'getPlaylist']);
+    Route::post('addBaiHatList', [BaiHatController::class, 'addBaiHatList']);
+
+    //Playlist
+    Route::post('postPlaylist', [PlaylistController::class,'postPlaylist']);
+    Route::get('getListPlaylist', [PlaylistController::class, 'getList']);
 });
 
 Route::prefix('user')->group(function () {

@@ -33,4 +33,8 @@ public function theloai()
 {
     return $this->belongsTo(TheLoai::class, 'theloai_id');
 }
+    public function playlists()
+    {
+        return $this->belongsToMany(Playlist::class)->withTimestamps();
+    }
 }

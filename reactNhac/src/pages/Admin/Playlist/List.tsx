@@ -1,18 +1,16 @@
 import ReactPaginate from "react-paginate";
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../SideBar';
-import {getListCaSi, deleteCaSi} from "../../../services/Admin/CaSiService";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import dayjs from 'dayjs';
-
-
-const ListCaSi = () => {
+import {getListPlaylist} from "../../../services/Admin/PlaylistService.tsx";
+const ListPlaylist = () => {
     const [list, setList] = useState<any[]>([]);
     const [pageCount, setPageCount] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
 
     const getData = async (page: number) => {
-        const res = await getListCaSi(page);
+        const res = await getListPlaylist(page);
         if (res && Array.isArray(res.data)) {
             setList(res.data);
             setPageCount(res.last_page);
@@ -22,7 +20,7 @@ const ListCaSi = () => {
     }
 
     const handleDelete = async (id: number) => {
-        const confirmDelete = confirm("Bạn có chắc chắn muốn xóa thể loại này?");
+        const confirmDelete = confirm("Bạn có chắc chắn muốn xóa playlist này?");
         if (!confirmDelete) return;
         try {
             await deleteCaSi(id);
@@ -34,7 +32,7 @@ const ListCaSi = () => {
                 if(list.length===1)
                     window.location.reload();
                 else
-                setCurrentPage(currentPage);
+                    setCurrentPage(currentPage);
             }
 
             await getData(currentPage);
@@ -51,7 +49,6 @@ const ListCaSi = () => {
         setCurrentPage(data.selected + 1);
     };
 
-    // @ts-ignore
     return (
         <div className="flex">
             <Sidebar/>
@@ -60,10 +57,10 @@ const ListCaSi = () => {
                     <thead>
                     <tr className="bg-blue-300 border border-black">
                         <th className="w-[50px] border border-black">ID</th>
-                        <th className="border border-black">Tên ca sĩ</th>
-                        <th className="border border-black">Giới tính</th>
-                        <th className="border border-black">Mô tả</th>
+                        <th className="border border-black p-2">Người dùng</th>
+                        <th className="border border-black">Tên playlist</th>
                         <th className="border border-black">Ảnh</th>
+                        <th className="border border-black">Trạng thái</th>
                         <th className="border border-black">Cập nhật</th>
                         <th className="border border-black"></th>
                     </tr>
@@ -73,13 +70,8 @@ const ListCaSi = () => {
                         list.map((item) => (
                             <tr key={item.id}>
                                 <td className="w-[50px] bg-white text-black border border-black">{item.id}</td>
-                                <td className="bg-white text-black border border-black">{item.ten_casi}</td>
-                                <td className="bg-white text-black border border-black">
-                                    {item.gioitinh}
-                                </td>
-                                <td className="bg-white text-black border border-black">
-                                    {item.mota}
-                                </td>
+                                <td className="w-[50px] bg-white text-black border border-black">{item.user.name}</td>
+                                <td className="bg-white text-black border border-black">{item.ten_playlist}</td>
                                 <td className="bg-white text-black border border-black p-2">
                                     <div className="flex justify-center items-center h-[60px] w-full">
                                         <img
@@ -89,7 +81,13 @@ const ListCaSi = () => {
                                         />
                                     </div>
                                 </td>
-
+                                <td className="bg-white text-black text-center border border-black">
+                                    {item.trangthai === 1 ? (
+                                        <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">YES</span>
+                                    ) : (
+                                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">NO</span>
+                                    )}
+                                </td>
                                 <td className="bg-white text-black border border-black">
                                     {dayjs(item.updated_at).format('DD/MM/YYYY')}
                                 </td>
@@ -106,8 +104,6 @@ const ListCaSi = () => {
                                         Xóa
                                     </button>
                                 </td>
-
-
                             </tr>
                         ))
                     ) : (
@@ -139,4 +135,4 @@ const ListCaSi = () => {
     );
 };
 
-export default ListCaSi;
+export default ListPlaylist;

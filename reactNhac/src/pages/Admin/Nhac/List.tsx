@@ -1,14 +1,41 @@
 import ReactPaginate from "react-paginate";
-import { useState, useEffect } from 'react';
+import {useState, useEffect, SetStateAction} from 'react';
 import Sidebar from '../SideBar';
-import { getListBaiHat,deleteBaiHat} from "../../../services/Admin/BaiHatService";
+import {getListBaiHat, deleteBaiHat, openPlaylist, addSongToPlaylist} from "../../../services/Admin/BaiHatService";
 import { Link } from "react-router-dom";
 import dayjs from 'dayjs';
 import YouTubeAudioPlayer from "../../../services/Admin/AudioSong.tsx";
+type Playlist = {
+    id: number;
+    ten_playlist: string;
+};
 const ListBaiHat = () => {
     const [list, setList] = useState<any[]>([]);
     const [pageCount, setPageCount] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [showModal, setShowModal] = useState(false);
+    const [playlists, setPlaylists] = useState<Playlist[]>([]);
+    const [selectedSongId, setSelectedSongId] = useState<number | null>(null);
+    const [thongBao, setThongBao] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+    const showPlaylist = async (songId: SetStateAction<number | null>)=>{
+        const res=await openPlaylist();
+        if(res && Array.isArray(res)){
+            // @ts-ignore
+            setPlaylists(res);
+            setSelectedSongId(songId);
+            setShowModal(true);
+        }
+    }
+    const getAddSongtoList = async (playlistId: number) => {
+        try {
+            await addSongToPlaylist(playlistId, selectedSongId);
+            setThongBao({ type: 'success', message: 'Thêm bài hát vào Playlist thành công' });
+            setShowModal(false);
+        } catch (error) {
+            setThongBao({ type: 'error', message: 'Thêm bài hát vào Playlist thất bại' });
+        }
+    };
 
 
     const getData = async (page: number) => {
@@ -50,11 +77,30 @@ const ListBaiHat = () => {
     const handlePageClick = (data: any) => {
         setCurrentPage(data.selected + 1);
     };
+    useEffect(() => {
+        if (thongBao) {
+            const timer = setTimeout(() => setThongBao(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [thongBao]);
 
     return (
         <div className="flex">
             <Sidebar/>
             <div className="flex-1 p-10 ">
+                {thongBao && (
+                    <div
+                        className={`px-4 py-3 rounded relative border mb-4
+            ${thongBao.type === 'success'
+                            ? 'bg-green-100 border-green-400 text-green-700'
+                            : 'bg-red-100 border-red-400 text-red-700'
+                        }`}
+                        role="alert"
+                    >
+                        <span className="block sm:inline">{thongBao.message}</span>
+                    </div>
+                )}
+
                 <table className="text-black w-full text-center border border-black border-collapse">
                     <thead>
                     <tr className="bg-blue-300 border border-black">
@@ -125,6 +171,53 @@ const ListBaiHat = () => {
                                     >
                                         Xóa
                                     </button>
+
+                                        <button
+                                            className="bg-green-500 px-2 py-1 text-white rounded text-[14px] cursor-pointer"
+                                            onClick={() => showPlaylist(item.id)}
+                                        >
+                                            Thêm vào Playlist
+                                        </button>
+
+                                    {showModal && (
+                                        <div
+                                            className="fixed inset-0 z-50 backdrop-blur-sm flex justify-center items-center"
+                                            onClick={() => setShowModal(false)}
+                                        >
+                                            <div
+                                                className="relative bg-white p-6 rounded-2xl shadow-2xl w-[1000px] border-2 border-purple-500 max-h-[90vh]"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+
+                                                <button
+                                                    className="absolute top-4 right-4 text-red-500 hover:text-red-700 font-semibold transition duration-200 text-lg z-10"
+                                                    onClick={() => setShowModal(false)}
+                                                >
+                                                    ✖
+                                                </button>
+
+                                                <div className="mt-10 overflow-y-auto max-h-[75vh] pr-2">
+                                                    <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">
+                                                        🎶 Chọn Playlist
+                                                    </h2>
+
+                                                    <div className="grid grid-cols-2 gap-6">
+                                                        {playlists.map((playlist) => (
+                                                            <button
+                                                                onClick={() => getAddSongtoList(playlist.id)}
+                                                                key={playlist.id}
+                                                                className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-indigo-600 hover:to-blue-600 text-white font-semibold px-6 py-4 rounded-xl text-lg transition-all duration-300 text-left shadow hover:scale-[1.02]"
+                                                            >
+                                                                {playlist.ten_playlist}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    )}
                                 </td>
                             </tr>
                         ))

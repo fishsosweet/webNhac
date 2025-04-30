@@ -49,4 +49,16 @@ class BaiHatController extends Controller
         $response = $this->baiHatService->destroy($id);
         return $response;
     }
+
+    public function getPlaylist()
+    {
+        $response = $this->baiHatService->getPlaylists();
+        return $response;
+    }
+
+    public function addBaiHatList(Request $request)
+    {
+        $response = $this->baiHatService->addBaiHattoList($request);
+        return $response;
+    }
 }

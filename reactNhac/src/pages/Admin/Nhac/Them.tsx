@@ -104,6 +104,15 @@ const BaiHat = () => {
         value: tl.id,
         label: tl.ten_casi,
     }));
+
+
+    useEffect(() => {
+        if (thongBao) {
+            const timer = setTimeout(() => setThongBao(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [thongBao]);
+
     return (
         <div className="flex">
             <Sidebar/>

@@ -44,7 +44,7 @@ class TheLoaiService extends Controller
     {
         $theLoai = TheLoai::select('id', 'ten_theloai', 'trangthai', 'updated_at')->paginate(10);;
         if ($theLoai->count() > 0)
-            return response()->json($theLoai, 201);
+            return response()->json($theLoai, 200);
         return response()->json(['error' => 'Không có dữ liệu'], 500);
     }
 

@@ -2,7 +2,7 @@
 import Sidebar from '../SideBar';
 import {SubmitHandler, useForm} from "react-hook-form";
 import {postTheLoai} from "../../../services/Admin/TheLoaiService.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 type Inputs = {
     tenTheLoai: string,
     trangThai: boolean,
@@ -24,6 +24,13 @@ const TheLoai = () => {
             setThongBao({ type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.' });
         }
     }
+
+    useEffect(() => {
+        if (thongBao) {
+            const timer = setTimeout(() => setThongBao(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [thongBao]);
     return (
         <div className="flex">
             <Sidebar/>

@@ -5,7 +5,9 @@ namespace App\Http\Service\BaiHat;
 use App\Http\Controllers\Controller;
 use App\Models\Baihat;
 use App\Models\Casi;
+use App\Models\Playlist;
 use App\Models\TheLoai;
+use Illuminate\Support\Facades\DB;
 
 class BaiHatService extends Controller
 {
@@ -140,5 +142,23 @@ class BaiHatService extends Controller
 
         $baihat->delete();
         return response()->json(['success' => 'Xóa thành công']);
+    }
+
+    public function getPlaylists()
+    {
+        $user = auth('api')->id();
+        $playlists = Playlist::where('user_id', $user)->where('trangthai',1)->select('id', 'ten_playlist')->get();
+        return response()->json($playlists);
+    }
+
+
+    public function addBaiHattoList($request)
+    {
+        DB::table('playlist_song')->insert([
+            'playlist_id' => $request->playlist_id,
+            'song_id' => $request->song_id,
+            'created_at' => now(),
+        ]);
+        return response()->json(['success' => 'Thêm bài hát thành công']);
     }
 }

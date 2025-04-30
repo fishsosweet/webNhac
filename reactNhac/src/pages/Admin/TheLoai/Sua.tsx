@@ -56,6 +56,13 @@ const SuaTheLoai = () => {
             setValue('trangThai', theLoai.trangthai.toString());
         }
     }, [theLoai]);
+
+    useEffect(() => {
+        if (thongBao) {
+            const timer = setTimeout(() => setThongBao(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [thongBao]);
     return (
         <div className="flex">
             <Sidebar/>

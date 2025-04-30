@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Http\Service\CaSi;
+namespace App\Http\Service\Playlist;
 
 use App\Http\Controllers\Controller;
-use App\Models\Baihat;
 use App\Models\Casi;
-use App\Models\TheLoai;
+use App\Models\Playlist;
 
-
-class CaSiService extends Controller
+class PlaylistService extends Controller
 {
     public function post($request)
     {
@@ -16,8 +14,8 @@ class CaSiService extends Controller
             'anh' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ]);
         try {
-            $pathanh='';
-            if($request->hasFile('anh') && $request->file('anh')->isValid()){
+            $pathanh = '';
+            if ($request->hasFile('anh') && $request->file('anh')->isValid()) {
                 $nameimage = $request->file('anh')->getClientOriginalName();
                 $path = 'uploads/' . date("Y/m/d");
                 if (!file_exists(public_path($path))) {
@@ -27,19 +25,20 @@ class CaSiService extends Controller
                 $pathanh = $path . '/' . $nameimage;
 
             }
-            Casi::create([
-                'ten_casi' => $request->tenCaSi,
-                'gioitinh'=> $request->gioiTinh,
-                'mota' => $request->moTa,
-                'anh'=> $pathanh,
+
+            Playlist::create([
+                'ten_playlist' => $request->tenPlaylist,
+                'user_id' => auth('api')->id(),
+                'trangthai' => $request->trangThai,
+                'anh' => $pathanh,
                 'created_at' => $request->ngayTao,
             ]);
             return response()->json([
-                'success' => 'Thêm ca sĩ thành công'
+                'success' => 'Thêm playlist thành công'
             ], 201);
         } catch (\Exception $exception) {
             return response()->json([
-                'error' => 'Thêm ca sĩ thất bại',
+                'error' => 'Thêm playlist thất bại',
                 'message' => $exception->getMessage(),
             ], 500);
         }
@@ -86,10 +85,13 @@ class CaSiService extends Controller
 
     public function list()
     {
-        $Casi = Casi::select('id', 'ten_casi', 'gioitinh', 'mota', 'anh','updated_at')->paginate(10);
-        if ($Casi->count() > 0)
-            return response()->json($Casi, 200);
-        return response()->json(['error' => 'Không có dữ liệu'], 500);
+        $playlist = Playlist::with('user:id,name')
+            ->select('id', 'ten_playlist', 'trangthai', 'anh', 'user_id', 'updated_at') // thêm user_id
+            ->paginate(10);
+
+        if ($playlist->count() > 0)
+            return response()->json($playlist, 200);
+        return response()->json(['error' => 'Không có dữ liệu'], 404);
     }
 
     public function destroy($id)
