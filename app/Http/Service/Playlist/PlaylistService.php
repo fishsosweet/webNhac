@@ -95,11 +95,11 @@ class PlaylistService extends Controller
 
     public function destroy($id)
     {
-        $ = Casi::find($id);
-        if (!$casi) {
-            return response()->json(['erorr' => 'Không tìm thấy ca sĩ'], 404);
+        $playlist = Playlist::find($id);
+        if (!$playlist) {
+            return response()->json(['erorr' => 'Không tìm thấy playlist'], 404);
         }
-        $casi->delete();
+        $playlist->delete();
         return response()->json(['success' => 'Xóa thành công']);
     }
 

@@ -29,7 +29,7 @@ export default function SidebarUser() {
 
     return (
         <div className="flex h-screen">
-            {/* Sidebar */}
+
             <div className="w-64 bg-[#251b39] text-white flex flex-col fixed top-0 left-0 bottom-0 p-4">
                 <div className="text-4xl font-bold mb-8 flex items-center gap-1 pl-3 ">
                     <span className="text-blue-400 stroke-white ">Z</span>

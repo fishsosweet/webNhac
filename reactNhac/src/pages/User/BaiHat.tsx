@@ -19,6 +19,7 @@ interface Song {
         ten_casi: string;
     };
     audio_url: string;
+    lyrics:string;
 }
 
 interface MusicPlayerProps {
@@ -33,15 +34,22 @@ declare global {
 }
 
 export default function MusicPlayer({ song }: MusicPlayerProps) {
+    const [volume, setVolume] = useState(0.5);
     const playerRef = useRef<YT.Player | null>(null);
     const playerContainerRef = useRef<HTMLDivElement | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    const [isLyrics, setLyrics] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
     const [currentSong, setCurrentSong] = useState<Song>(song);
     const [playlist, setPlaylist] = useState<Song[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const showLyrics= async ()=>{
+        setLyrics(true);
+    }
 
     const extractVideoId = (url: string): string | null => {
         const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
@@ -64,7 +72,7 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
     useEffect(() => {
         if (!song) return;
 
-        setCurrentSong({ ...song }); // force trigger bằng object mới
+        setCurrentSong({ ...song });
         setPlaylist((prev) => {
             const remaining = prev.filter(s => s.id !== song.id);
             return [song, ...remaining];
@@ -111,6 +119,7 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
                             setDuration(player.getDuration());
                             setIsReady(true);
                             player.playVideo();
+                            player.setVolume(volume * 100);
                             setIsPlaying(true);
                         }, 500);
                     },
@@ -252,14 +261,46 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
 
             <div className="flex items-center gap-4">
                 <button className="text-white"><MdOutlineOndemandVideo size={20}/></button>
-                <button className="text-white"><MdOutlineLyrics size={20}/></button>
+                <button className="text-white"><MdOutlineLyrics size={20} onClick={()=>showLyrics()}
+                />
+                    {isLyrics && (
+                        <div
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                            <div
+                                className="bg-[#1e1b29] text-white rounded-lg p-6 w-[90%] max-w-lg max-h-[80vh] overflow-y-auto shadow-lg relative">
+                                <button
+                                    className="absolute top-2 right-2 text-gray-300 hover:text-white text-xl"
+                                    onClick={() => setLyrics(false)}
+                                >
+                                    ✕
+                                </button>
+                                <h2 className="text-xl font-semibold mb-4 text-center">Lời bài hát</h2>
+                                <div className="whitespace-pre-line leading-relaxed text-sm">
+                                    {currentSong.lyrics || "Chưa có lời bài hát"}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </button>
                 <button className="text-white"><MdOutlineFullscreen size={20}/></button>
                 <div className="flex items-center gap-2">
                     <FaVolumeUp className="text-white"/>
-                    <div className="w-24 h-1 bg-gray-700 rounded">
-                        <div className="h-full bg-white w-2/3"></div>
-                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={volume}
+                        onChange={(e) => {
+                            const vol = parseFloat(e.target.value);
+                            setVolume(vol);
+                            playerRef.current?.setVolume(vol * 100);
+                        }}
+                        className="w-24 h-1 accent-white"
+                    />
+                    <span className="text-white text-sm w-[32px]">{Math.round(volume * 100)}%</span>
                 </div>
+
             </div>
         </div>
     );
