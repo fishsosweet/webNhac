@@ -4,6 +4,7 @@ namespace App\Http\Service\TrangChu;
 
 use App\Http\Controllers\Controller;
 use App\Models\Baihat;
+use App\Models\Playlist;
 
 class TrangChuService extends Controller
 {
@@ -17,6 +18,19 @@ class TrangChuService extends Controller
                 'error' => $exception->getMessage(),
             ],500);
        }
+
+    }
+
+    public function getPlaylist(){
+        try{
+            $playlist = Playlist::where('trangthai',1)->where('user_id',1)->limit(5)->get();
+            return response()->json($playlist, 200);
+        }
+        catch (\Exception $exception){
+            return response()->json([
+                'error' => $exception->getMessage(),
+            ],500);
+        }
 
     }
 }

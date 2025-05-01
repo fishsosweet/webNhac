@@ -22,6 +22,7 @@ import SuaTheLoai from "./pages/Admin/TheLoai/Sua.tsx";
 import SidebarUser from "./pages/User/SideBar.tsx"
 import Playlist from "./pages/Admin/Playlist/Them.tsx";
 import ListPlaylist from "./pages/Admin/Playlist/List.tsx";
+import SuaPlaylist from "./pages/Admin/Playlist/Sua.tsx";
 
 const router = createBrowserRouter([
     {
@@ -108,6 +109,12 @@ const router = createBrowserRouter([
         path: "/admin/songs/edit/:id",
         element:  <PrivateRoute>
             <SuaBaiHat />
+        </PrivateRoute>
+    },
+    {
+        path: "/admin/playlists/edit/:id",
+        element:  <PrivateRoute>
+            <SuaPlaylist />
         </PrivateRoute>
     },
 ]);

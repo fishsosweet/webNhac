@@ -8,7 +8,15 @@ const getDSBaiRandom =async ()=>{
         return {error: "Load thất bại!"};
     }
 }
+const getDSPlaylist =async ()=>{
+    try{
+        const res=await axiosInstance.get('/user/getPlaylist');
+        return res.data
+    }catch (error: any){
+        return {error: "Load thất bại!"};
+    }
+}
 const getDSPhat = async (excludeIds: number[] = []) => {
     return axiosInstance.post("/user/nextSongs", { exclude: excludeIds });
 };
-export {getDSBaiRandom,getDSPhat}
+export {getDSBaiRandom,getDSPhat,getDSPlaylist}

@@ -17,18 +17,21 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'auth'], function () {
     Route::post('login', [apiLoginAdmin::class, 'getapiLoginAdmin']);
+
     //TheLoai
     Route::post('postTheLoai', [TheLoaiController::class, 'postTheLoai']);
     Route::get('getListTheLoai', [TheLoaiController::class, 'getList']);
     Route::post('postSuaTheLoai/{id}', [TheLoaiController::class, 'postCapNhatTheLoai']);
     Route::get('thongTinTheLoai/{id}', [TheLoaiController::class, 'getTheloai']);
     Route::delete('deleteTheLoai/{id}', [TheLoaiController::class, 'delete']);
+
     //CaSi
     Route::post('postCaSi', [CaSiController::class,'postCaSi']);
     Route::get('getListCaSi', [CaSiController::class, 'getList']);
     Route::post('postSuaCaSi/{id}', [CaSiController::class, 'postCapNhatCaSi']);
     Route::get('thongTinCaSi/{id}', [CaSiController::class, 'getCaSi']);
     Route::delete('deleteCaSi/{id}', [CaSiController::class, 'delete']);
+
     //BaiHat
     Route::get('dsTheLoai', [BaiHatController::class, 'getTheLoai']);
     Route::get('dsCaSi', [BaiHatController::class, 'getCaSi']);
@@ -41,12 +44,19 @@ Route::group([
     Route::post('addBaiHatList', [BaiHatController::class, 'addBaiHatList']);
 
     //Playlist
+    Route::get('thongTinPlaylist/{id}', [PlaylistController::class, 'getPlaylist']);
     Route::post('postPlaylist', [PlaylistController::class,'postPlaylist']);
     Route::get('getListPlaylist', [PlaylistController::class, 'getList']);
+    Route::get('playlists/{id}', [PlaylistController::class, 'getSong']);
+    Route::delete('playlist/{playlist}/songs/{song}', [PlaylistController::class, 'deleteBaiHatOfPlaylist']);
+    Route::post('postSuaPlaylist/{id}', [PlaylistController::class, 'postCapNhatPlaylist']);
+    Route::delete('deletePlaylist/{id}', [PlaylistController::class, 'delete']);
 });
 
 Route::prefix('user')->group(function () {
     //TrangChu
     Route::get('getRandomSongs', [TrangChuController::class, 'getRandomSongs']);
     Route::post('nextSongs', [TrangChuController::class, 'getNextSongs']);
+    Route::get('getPlaylist', [TrangChuController::class, 'getPlaylist']);
+
 });

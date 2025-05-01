@@ -17,6 +17,10 @@ class TrangChuController extends Controller
         $response=$this->trangChuService->getRandomBaiHat();
         return $response;
     }
+    public function getPlaylist(){
+        $response=$this->trangChuService->getPlaylist();
+        return $response;
+    }
     public function getNextSongs(Request $request)
     {
         $exclude = $request->input('exclude', []);

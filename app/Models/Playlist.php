@@ -20,8 +20,9 @@ class Playlist extends Model
     ];
     public function baihats()
     {
-        return $this->belongsToMany(Baihat::class)->withTimestamps();
+        return $this->belongsToMany(Baihat::class, 'playlist_song', 'playlist_id', 'song_id')->withTimestamps();
     }
+
 
     public function user()
     {

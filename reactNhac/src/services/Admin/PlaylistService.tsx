@@ -30,21 +30,27 @@ const postPlaylist = async (playList: post) => {
     }
 }
 
-const getThongTinTheLoai = async (id: number) => {
+const getThongTinPlaylist = async (id: number) => {
     try {
-        const res = await axiosInstance.get(`/auth/thongTinTheLoai/${id}`);
+        const res = await axiosInstance.get(`/auth/thongTinPlaylist/${id}`);
         return res.data
     } catch (error: any) {
         const errorMessage = error.response?.data?.error || "Đã có lỗi xảy ra";
         return {success: false, message: errorMessage};
     }
 }
-const postSuaTheLoai = async (theLoai: post,id: number) => {
+const postSuaPlaylist = async (playlist: post,id: number) => {
     try {
-        const response = await axiosInstance.post(`/auth/postSuaTheLoai/${id}`, {
-            tenTheLoai: theLoai.tenTheLoai,
-            trangThai: theLoai.trangThai,
-            ngayCapNhat: theLoai.ngayCapNhat
+        const formData = new FormData();
+        formData.append('tenPlaylist', playlist.tenPlaylist);
+        formData.append('trangThai', playlist.trangThai.toString());
+        formData.append('anh', playlist.anh);
+        // @ts-ignore
+        formData.append('ngayCapNhat', casi.ngayCapNhat);
+        const response = await axiosInstance.post(`/auth/postSuaPlaylist/${id}`,  formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
         })
         return {success: true, message: response.data.success};
     } catch (error: any) {
@@ -60,13 +66,31 @@ const getListPlaylist = async (page: number) => {
         throw error.response?.data?.error || 'Đã xảy ra lỗi!';
     }
 }
-const deleteTheLoai = async (id: number) => {
+const deletePlaylist = async (id: number) => {
     try {
-        const response = await axiosInstance.delete(`/auth/deleteTheLoai/${id}`);
+        const response = await axiosInstance.delete(`/auth/deletePlaylist/${id}`);
         return response.data;
     } catch (error: any) {
         throw error.response?.data || error;
     }
 };
 
-export {postPlaylist, getListPlaylist,postSuaTheLoai,deleteTheLoai,getThongTinTheLoai};
+const deleteBaiHatOfPlaylist = async (playlistId: number, songId: number) => {
+    try {
+        const response = await axiosInstance.delete(`/auth/playlist/${playlistId}/songs/${songId}`);
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data || error;
+    }
+};
+const getBaiHatOfPlaylist = async (id: number) => {
+    try {
+        const response = await axiosInstance.get(`/auth/playlists/${id}`);;
+        return response.data;
+    } catch (error: any) {
+        throw error.response?.data?.error || 'Đã xảy ra lỗi!';
+    }
+};
+
+
+export {postPlaylist, getListPlaylist,postSuaPlaylist,deletePlaylist,getThongTinPlaylist,getBaiHatOfPlaylist,deleteBaiHatOfPlaylist};

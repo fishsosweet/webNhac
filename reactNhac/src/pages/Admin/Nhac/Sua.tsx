@@ -79,7 +79,7 @@ const SuaBaiHat = () => {
             setThongBao({type: 'error', message: 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'});
         }
     }
-    const themBaiHat: SubmitHandler<Inputs> = async (data) => {
+    const suaBaiHat: SubmitHandler<Inputs> = async (data) => {
         try {
 
             const res = await postSuaBaiHat(data,parseInt(id!));
@@ -171,7 +171,7 @@ const SuaBaiHat = () => {
                     </div>
                 )}
                 <h1 className="mb-4 font-bold text-2xl">Cập nhật Bài Hát</h1>
-                <form encType="multipart/form-data" onSubmit={handleSubmit(themBaiHat)}>
+                <form encType="multipart/form-data" onSubmit={handleSubmit(suaBaiHat)}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <div className="mb-5">

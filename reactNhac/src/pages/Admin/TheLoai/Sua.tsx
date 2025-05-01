@@ -14,7 +14,7 @@ const SuaTheLoai = () => {
     const [thongBao, setThongBao] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const { register, handleSubmit,reset,setValue, formState: { errors } } = useForm<Inputs>();
     const { id } = useParams();
-    const themTheLoai: SubmitHandler<Inputs> = async (data) => {
+    const suaTheLoai: SubmitHandler<Inputs> = async (data) => {
         try {
             const res = await postSuaTheLoai(data,parseInt(id!));
             setThongBao({
@@ -80,7 +80,7 @@ const SuaTheLoai = () => {
                     </div>
                 )}
                 <h1 className="mb-4 font-bold text-2xl">Cập nhật thể loại</h1>
-                <form encType="multipart/form-data" onSubmit={handleSubmit(themTheLoai)}>
+                <form encType="multipart/form-data" onSubmit={handleSubmit(suaTheLoai)}>
                     <div className="row">
                         <div className="col-md-6">
                             <div className="mb-3">

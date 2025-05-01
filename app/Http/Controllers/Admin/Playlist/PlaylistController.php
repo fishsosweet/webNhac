@@ -14,14 +14,18 @@ class PlaylistController extends Controller
     {
         $this->playlistService = $playlistService;
     }
-
+    public function getPlaylist($id)
+    {
+        $response = $this->playlistService->getID($id);
+        return $response;
+    }
     public function postPlaylist(Request $request)
     {
         $response = $this->playlistService->post($request);
         return $response;
     }
 
-    public function postCapNhatTheLoai(Request $request,$id)
+    public function postCapNhatPlaylist(Request $request,$id)
     {
         $response = $this->playlistService->update($request,$id);
         return $response;
@@ -34,6 +38,17 @@ class PlaylistController extends Controller
 
     public function delete($id){
         $response=$this->playlistService->destroy($id);
+        return $response;
+    }
+
+    public function getSong($id)
+    {
+        $response=$this->playlistService->getSongs($id);
+        return $response;
+    }
+    public function deleteBaiHatOfPlaylist($playlistId, $songId)
+    {
+        $response=$this->playlistService->destroySong($playlistId,$songId);
         return $response;
     }
 }

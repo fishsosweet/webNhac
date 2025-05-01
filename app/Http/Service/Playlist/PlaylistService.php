@@ -50,33 +50,32 @@ class PlaylistService extends Controller
         ]);
         try {
 
-            $casi = Casi::find($id);
-            if (!$casi) {
+            $playlist = Playlist::find($id);
+            if (!$playlist) {
 
-                return response()->json(['error' => 'Ca sĩ không tồn tại'], 404);
+                return response()->json(['error' => 'Playlist không tồn tại'], 404);
             }
             $pathanh='';
             if($request->hasFile('anh') && $request->file('anh')->isValid()){
                 $nameimage = $request->file('anh')->getClientOriginalName();
                 $path = 'uploads/' . date("Y/m/d");
                 if (!file_exists(public_path($path))) {
-                    mkdir(public_path($path), 0777, true); // Tạo thư mục nếu chưa có
+                    mkdir(public_path($path), 0777, true);
                 }
                 $request->file('anh')->move(public_path($path), $nameimage);
                 $pathanh = $path . '/' . $nameimage;
 
             }
 
-            $casi->ten_casi= $request->tenCaSi;
-            $casi->gioitinh = $request->gioiTinh;
-            $casi->mota = $request->moTa;
-            $casi->anh =$pathanh;
-            $casi->updated_at = $request->ngayCapNhat;
-            $casi->save();
-            return response()->json(['success' => 'Cập nhật ca sĩ thành công'], 200);
+            $playlist->ten_playlist= $request->tenPlaylist;
+            $playlist->trangthai = $request->trangThai;
+            $playlist->anh =$pathanh;
+            $playlist->updated_at = $request->ngayCapNhat;
+            $playlist->save();
+            return response()->json(['success' => 'Cập nhật playlist thành công'], 200);
         } catch (\Exception $exception) {
             return response()->json([
-                'error' => 'Cập nhật ca sĩ thất bại',
+                'error' => 'Cập nhật playlist thất bại',
                 'message' => $exception->getMessage(),
             ], 500);
         }
@@ -96,20 +95,30 @@ class PlaylistService extends Controller
 
     public function destroy($id)
     {
-        $casi = Casi::find($id);
+        $ = Casi::find($id);
         if (!$casi) {
             return response()->json(['erorr' => 'Không tìm thấy ca sĩ'], 404);
         }
-
         $casi->delete();
         return response()->json(['success' => 'Xóa thành công']);
+    }
+
+    public function destroySong($playlistId,$songId)
+    {
+        $playlist = Playlist::find($playlistId);
+        if (!$playlist) {
+            return response()->json(['message' => 'Playlist không tồn tại'], 404);
+        }
+
+        $playlist->baihats()->detach($songId);
+        return response()->json(['message' => 'Xóa bài hát khỏi playlist thành công']);
     }
 
     public function getID($id)
     {
         try {
-            $casi = Casi::find($id);
-            return response()->json($casi);
+            $playlist = Playlist::find($id);
+            return response()->json($playlist);
         }catch (\Exception $exception) {
             return response()->json([
                 'error' =>"ID không tồn tại",
@@ -117,4 +126,15 @@ class PlaylistService extends Controller
             ], 500);
         }
     }
+
+
+    public function getSongs($id)
+    {
+        $playlist = Playlist::with('baihats')->find($id);
+        if (!$playlist) {
+            return response()->json(['message' => 'Playlist không tồn tại'], 404);
+        }
+        return response()->json($playlist->baihats);
+    }
+
 }

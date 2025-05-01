@@ -17,7 +17,7 @@ const SuaCaSi = () => {
     const [thongBao, setThongBao] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const {register, handleSubmit, reset, formState: {errors},setValue} = useForm<Inputs>();
     const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const themCaSi: SubmitHandler<Inputs> = async (data) => {
+    const suaCaSi: SubmitHandler<Inputs> = async (data) => {
         try {
             const res = await postSuaCaSi(data,parseInt(id!));
             setThongBao({
@@ -91,7 +91,7 @@ const SuaCaSi = () => {
                     </div>
                 )}
                 <h1 className="mb-4 font-bold text-2xl">Cập nhật ca sĩ</h1>
-                <form encType="multipart/form-data" onSubmit={handleSubmit(themCaSi)}>
+                <form encType="multipart/form-data" onSubmit={handleSubmit(suaCaSi)}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <div className="mb-5">
