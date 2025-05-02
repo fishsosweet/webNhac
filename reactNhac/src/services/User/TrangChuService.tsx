@@ -19,4 +19,12 @@ const getDSPlaylist =async ()=>{
 const getDSPhat = async (excludeIds: number[] = []) => {
     return axiosInstance.post("/user/nextSongs", { exclude: excludeIds });
 };
-export {getDSBaiRandom,getDSPhat,getDSPlaylist}
+
+const getSongsInPlaylist = async (id: number) => {
+    return axiosInstance.get(`/user/getSonginPlaylist/${id}`);
+};
+const getDSMoiPhatHanh = async () => {
+    return axiosInstance.get(`/user/getNewSongs`);
+};
+
+export {getDSBaiRandom,getDSPhat,getDSPlaylist,getSongsInPlaylist,getDSMoiPhatHanh}

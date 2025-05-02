@@ -6,17 +6,42 @@
 //     { title: "Top 100 Pop Âu Mỹ Hay Nhất", img: "/path/to/image5.jpg" },
 //     { title: "Hit-Maker: Hứa Kim Tuyền", img: "/path/to/image6.jpg" },
 // ];
-import {getDSBaiRandom, getDSPlaylist} from "../../services/User/TrangChuService.tsx";
+import {getDSBaiRandom, getDSMoiPhatHanh, getDSPlaylist} from "../../services/User/TrangChuService.tsx";
 import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import {
     FaHeart,FaPlay
 } from "react-icons/fa";
+import dayjs from 'dayjs';
 
-export default function HomeUser({ onPlaySong }: { onPlaySong: (song: any) => void }) {
+
+export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
+    onPlaySong: (song: any) => void,
+    onPlayPlaylist: (playlistId: number) => void
+}) {
+
     const [baiHatRandom, setBaiHatRandom] = useState<any[]>([]);
     const [playlist, setPlaylist] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [newReleases, setNewReleases] = useState<any[]>([]);
+
+
+    useEffect(() => {
+        const fetchNewReleases = async () => {
+            try {
+                const res = await getDSMoiPhatHanh();
+                if (res) {
+                    setNewReleases(res.data);
+                }
+            } catch (e) {
+                console.error("Lỗi khi lấy nhạc mới phát hành", e);
+            }
+        };
+
+        fetchNewReleases();
+    }, []);
+
+
 
     const getBaiHatRandom = async () => {
         setIsLoading(true);
@@ -30,6 +55,7 @@ export default function HomeUser({ onPlaySong }: { onPlaySong: (song: any) => vo
         }
         setIsLoading(false);
     }
+
 
     const getPlaylist = async () => {
         setIsLoading(true);
@@ -122,15 +148,11 @@ export default function HomeUser({ onPlaySong }: { onPlaySong: (song: any) => vo
 
                             <div className="flex flex-col overflow-hidden">
                                 <Link to="/">
-            <span
-                className="font-semibold hover:text-[#9b4de0] text-[18px] truncate max-w-[150px]">
-                {item.title}
-            </span>
+                                    <span
+                                        className="font-semibold hover:text-[#9b4de0] text-[18px] truncate max-w-[150px]">{item.title}</span>
                                 </Link>
                                 <Link to="/">
-            <span className="text-xs text-gray-400 hover:text-[#9b4de0] truncate max-w-[180px]">
-                {item.casi.ten_casi}
-            </span>
+                                    <span className="text-xs text-gray-400 hover:text-[#9b4de0] truncate max-w-[180px]">{item.casi.ten_casi}</span>
                                 </Link>
                             </div>
 
@@ -167,7 +189,14 @@ export default function HomeUser({ onPlaySong }: { onPlaySong: (song: any) => vo
                                     />
                                     <div
                                         className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <FaPlay className="text-white text-3xl"/>
+                                        <button
+                                            onClick={() => onPlayPlaylist(playlist.id)}
+                                            className="w-16 h-16 rounded-full border-4 border-purple-500 flex items-center justify-center hover:bg-purple-600 transition-colors duration-300 cursor-pointer"
+                                        >
+                                            <FaPlay className="text-white text-2xl ml-1 "/>
+                                        </button>
+
+
                                     </div>
                                 </div>
                                 <h3 className="text-gray-500 mt-2 font-semibold text-sm">{playlist.ten_playlist}</h3>
@@ -177,6 +206,63 @@ export default function HomeUser({ onPlaySong }: { onPlaySong: (song: any) => vo
 
                         ))}
                     </div>
+                </div>
+            </section>
+            <section className="pt-8">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Mới Phát Hành</h2>
+                    <Link to="#" className="text-sm text-gray-400 hover:text-white">
+                        TẤT CẢ &gt;
+                    </Link>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+                    {newReleases.map((item) => (
+                        <div key={item.id}
+                             className="group relative flex items-center gap-5 hover:bg-[#2a213a] rounded-md transition duration-300">
+                            <div className="relative group cursor-pointer m-2 w-[60px] h-[60px]">
+                                <img
+                                    src={`http://127.0.0.1:8000/${item.anh}`}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover rounded-md "
+                                    onClick={() => onPlaySong(item)}
+                                />
+                                <button
+                                    className="absolute inset-0 flex items-center justify-center  text-white bg-opacity-50 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                                    onClick={() => onPlaySong(item)}
+                                >
+                                    <FaPlay/>
+                                </button>
+                            </div>
+                            <div className="flex flex-col overflow-hidden">
+                                <div className="flex flex-col overflow-hidden">
+                                    <Link to="/">
+                                    <span
+                                        className="font-semibold hover:text-[#9b4de0] text-[18px] truncate max-w-[150px]">{item.title}</span>
+                                    </Link>
+                                    <Link to="/">
+                                        <span
+                                            className="text-xs text-gray-400 hover:text-[#9b4de0] truncate max-w-[180px]">{item.casi.ten_casi}</span>
+                                    </Link>
+                                </div>
+                                <span className="text-xs text-gray-500">
+                                    {
+                                        dayjs().diff(dayjs(item.created_at), 'day') === 0 ? 'Hôm nay' : `${dayjs().diff(dayjs(item.created_at), 'day')} ngày trước`
+                                    }
+                                </span>
+
+                            </div>
+                            <div
+                                className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <button className="text-white hover:text-pink-500 cursor-pointer">
+                                    <FaHeart/>
+                                </button>
+                                <button className="text-white hover:text-gray-400 cursor-pointer">
+                                    ⋮
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </section>
 

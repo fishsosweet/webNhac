@@ -19,11 +19,12 @@ interface Song {
         ten_casi: string;
     };
     audio_url: string;
-    lyrics:string;
+    lyrics: string;
 }
 
 interface MusicPlayerProps {
     song: Song;
+    playlist?: Song[];
 }
 
 declare global {
@@ -33,23 +34,23 @@ declare global {
     }
 }
 
-export default function MusicPlayer({ song }: MusicPlayerProps) {
-    const [volume, setVolume] = useState(0.5);
+export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlayerProps) {
+    const [volume, setVolume] = useState(1);
     const playerRef = useRef<YT.Player | null>(null);
     const playerContainerRef = useRef<HTMLDivElement | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-
     const [isLyrics, setLyrics] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
     const [currentSong, setCurrentSong] = useState<Song>(song);
     const [playlist, setPlaylist] = useState<Song[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const showLyrics= async ()=>{
+    const [hasNewSelection, setHasNewSelection] = useState(false);
+
+    const showLyrics = () => {
         setLyrics(true);
-    }
+    };
 
     const extractVideoId = (url: string): string | null => {
         const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
@@ -59,6 +60,15 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
     const videoId = useMemo(() => extractVideoId(currentSong.audio_url), [currentSong.audio_url]);
 
     const fetchNextSongs = async (excludeIds: number[] = []) => {
+        if (playlistProp && playlistProp.length > 0) {
+            const filtered = playlistProp.filter(song => !excludeIds.includes(song.id));
+            if (filtered.length > 0) {
+                setPlaylist(filtered);
+                setCurrentIndex(0);
+                return;
+            }
+        }
+
         try {
             const response = await getDSPhat(excludeIds);
             if (Array.isArray(response.data)) {
@@ -69,26 +79,33 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
             console.error("Lỗi khi lấy danh sách nhạc:", error);
         }
     };
+
     useEffect(() => {
         if (!song) return;
 
         setCurrentSong({ ...song });
-        setPlaylist((prev) => {
-            const remaining = prev.filter(s => s.id !== song.id);
-            return [song, ...remaining];
-        });
-        setCurrentIndex(0);
-    }, [song]);
-
-
-
+        setHasNewSelection(true);
+        if (playlistProp && playlistProp.length > 0) {
+            const index = playlistProp.findIndex(s => s.id === song.id);
+            setPlaylist(playlistProp);
+            setCurrentIndex(index >= 0 ? index : 0);
+        } else {
+            setPlaylist([song]);
+            setCurrentIndex(0);
+        }
+    }, [song, playlistProp]);
 
     useEffect(() => {
-        if (playlist.length > 0) {
+        if (playlist.length > 0 && !hasNewSelection) {
             setCurrentIndex(0);
             setCurrentSong(playlist[0]);
         }
+
+        if (hasNewSelection) {
+            setHasNewSelection(false);
+        }
     }, [playlist]);
+
 
     useEffect(() => {
         const initPlayer = async () => {
@@ -114,7 +131,6 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
                 events: {
                     onReady: (event) => {
                         const player = event.target;
-
                         setTimeout(() => {
                             setDuration(player.getDuration());
                             setIsReady(true);
@@ -153,7 +169,6 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
         }
     };
 
-
     useEffect(() => {
         const interval = setInterval(() => {
             if (playerRef.current?.getCurrentTime) {
@@ -180,7 +195,6 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
         return `${min}:${sec}`;
     };
 
-
     const handlePrevSong = () => {
         if (!playerRef.current) return;
 
@@ -194,7 +208,6 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
         }
     };
 
-
     const handleNextSong = () => {
         if (playlist.length > 0 && currentIndex < playlist.length - 1) {
             const nextIndex = currentIndex + 1;
@@ -206,11 +219,9 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
         }
     };
 
-
     return (
         <div className="bg-[#120f19] p-4 flex items-center justify-between rounded-2xl shadow-lg relative">
             <div ref={playerContainerRef} style={{ display: 'none' }} />
-
             <div className="flex items-center gap-4 w-[300px]">
                 <img
                     src={`http://127.0.0.1:8000/${currentSong.anh}`}
@@ -227,16 +238,15 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
 
             <div className="flex flex-col items-center flex-1 px-10">
                 <div className="flex items-center gap-5 mb-2">
-
-                    <button className="text-white" onClick={handlePrevSong}><FaStepBackward/></button>
+                    <button className="text-white cursor-pointer" onClick={handlePrevSong}><FaStepBackward /></button>
                     <button
                         onClick={togglePlay}
                         disabled={!isReady}
                         className={`w-10 h-10 flex items-center justify-center rounded-full border-2 cursor-pointer ${isReady ? "border-purple-500 text-purple-500" : "border-gray-500 text-gray-500"}`}
                     >
-                        {isPlaying ? <FaPause/> : <FaPlay/>}
+                        {isPlaying ? <FaPause /> : <FaPlay />}
                     </button>
-                    <button className="text-white" onClick={handleNextSong}><FaStepForward/></button>
+                    <button className="text-white cursor-pointer" onClick={handleNextSong}><FaStepForward /></button>
                 </div>
                 <div className="flex items-center w-[520px] gap-3">
                     <span className="text-sm text-gray-400">{formatTime(currentTime)}</span>
@@ -252,7 +262,7 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
                     >
                         <div
                             className="h-full bg-white rounded transition-all duration-300"
-                            style={{width: duration ? `${(currentTime / duration) * 100}%` : '0%'}}
+                            style={{ width: duration ? `${(currentTime / duration) * 100}%` : '0%' }}
                         />
                     </div>
                     <span className="text-sm text-gray-400">{formatTime(duration)}</span>
@@ -260,31 +270,23 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
             </div>
 
             <div className="flex items-center gap-4">
-                <button className="text-white"><MdOutlineOndemandVideo size={20}/></button>
-                <button className="text-white"><MdOutlineLyrics size={20} onClick={()=>showLyrics()}
-                />
-                    {isLyrics && (
-                        <div
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-                            <div
-                                className="bg-[#1e1b29] text-white rounded-lg p-6 w-[90%] max-w-lg max-h-[80vh] overflow-y-auto shadow-lg relative">
-                                <button
-                                    className="absolute top-2 right-2 text-gray-300 hover:text-white text-xl"
-                                    onClick={() => setLyrics(false)}
-                                >
-                                    ✕
-                                </button>
-                                <h2 className="text-xl font-semibold mb-4 text-center">Lời bài hát</h2>
-                                <div className="whitespace-pre-line leading-relaxed text-sm">
-                                    {currentSong.lyrics || "Chưa có lời bài hát"}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                <button className="text-white"><MdOutlineOndemandVideo size={20} /></button>
+                <button className="text-white cursor-pointer" onClick={showLyrics}>
+                    <MdOutlineLyrics size={20} />
+
                 </button>
-                <button className="text-white"><MdOutlineFullscreen size={20}/></button>
+                {isLyrics && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-[#1e1b29] text-white rounded-lg p-6 w-[90%] max-w-lg max-h-[80vh] overflow-y-auto shadow-lg relative">
+                            <button className="absolute top-2 right-2 text-gray-300 hover:text-white text-xl cursor-pointer" onClick={() => setLyrics(false)}>✕</button>
+                            <h2 className="text-xl font-semibold mb-4 text-center">Lời bài hát</h2>
+                            <div className="whitespace-pre-line leading-relaxed text-sm">{currentSong.lyrics || "Chưa có lời bài hát"}</div>
+                        </div>
+                    </div>
+                )}
+                <button className="text-white"><MdOutlineFullscreen size={20} /></button>
                 <div className="flex items-center gap-2">
-                    <FaVolumeUp className="text-white"/>
+                    <FaVolumeUp className="text-white" />
                     <input
                         type="range"
                         min="0"
@@ -300,7 +302,6 @@ export default function MusicPlayer({ song }: MusicPlayerProps) {
                     />
                     <span className="text-white text-sm w-[32px]">{Math.round(volume * 100)}%</span>
                 </div>
-
             </div>
         </div>
     );

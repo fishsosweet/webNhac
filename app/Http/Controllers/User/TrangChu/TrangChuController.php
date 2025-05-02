@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User\TrangChu;
 use App\Http\Controllers\Controller;
 use App\Http\Service\TrangChu\TrangChuService;
 use App\Models\Baihat;
+use App\Models\Playlist;
 use Illuminate\Http\Request;
 class TrangChuController extends Controller
 {
@@ -24,7 +25,6 @@ class TrangChuController extends Controller
     public function getNextSongs(Request $request)
     {
         $exclude = $request->input('exclude', []);
-
         $songs = Baihat::whereNotIn('id', $exclude)
             ->inRandomOrder()
             ->limit(5)
@@ -33,4 +33,31 @@ class TrangChuController extends Controller
 
         return response()->json($songs);
     }
+    public function getSonginPlaylist($id)
+    {
+        $playlist = Playlist::with('baihats.casi')->find($id);
+        if ($playlist) {
+            return response()->json($playlist->baihats);
+        } else {
+            return response()->json(['message' => 'Không tìm thấy Playlist'], 404);
+        }
+    }
+
+    public function getNewSongs()
+    {
+        try {
+            $songs = BaiHat::with('casi')
+                ->orderBy('created_at', 'desc')
+                ->limit(12)
+                ->get();
+            return response()->json($songs, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Đã xảy ra lỗi khi lấy bài hát mới phát hành',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

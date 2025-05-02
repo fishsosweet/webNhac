@@ -4,10 +4,35 @@ import {RiPlayListAddLine} from "react-icons/ri";
 import HeaderUser from "./TimKiem.tsx";
 import HomeUser from "./UserPage.tsx";
 import MusicPlayer from "./BaiHat.tsx";
-
+import { getSongsInPlaylist } from "../../services/User/TrangChuService"; // nhớ import đúng hàm API
+interface Song {
+    id: number;
+    title: string;
+    anh: string;
+    casi: {
+        ten_casi: string;
+    };
+    audio_url: string;
+    lyrics: string;
+}
 export default function SidebarUser() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentSong, setCurrentSong] = useState(null);
+    const [playlist, setPlaylist] = useState<Song[]>([]);
+
+
+    const handlePlayPlaylist = async (playlistId: number) => {
+        try {
+            const response = await getSongsInPlaylist(playlistId);
+            if (response && Array.isArray(response.data) && response.data.length > 0) {
+                setCurrentSong(response.data[0]);    // phát bài đầu tiên trong playlist
+                setPlaylist(response.data);          // lưu toàn bộ playlist
+                setIsPlaying(true);
+            }
+        } catch (e) {
+            console.error("Không thể tải danh sách từ playlist:", e);
+        }
+    };
 
     const handlePlaySong = (song: SetStateAction<null>) => {
         setCurrentSong(song);
@@ -93,12 +118,12 @@ export default function SidebarUser() {
                     </div>
 
                     <div className="flex-1 mt-[65px] overflow-y-auto bg-[#2a1a40] pb-24">
-                        <HomeUser onPlaySong={handlePlaySong} />
+                        <HomeUser onPlaySong={handlePlaySong} onPlayPlaylist={handlePlayPlaylist} />
                     </div>
 
                     {isPlaying && currentSong && (
                         <div className="fixed left-64 right-0 bottom-0 z-50">
-                            <MusicPlayer song={currentSong} />
+                            <MusicPlayer song={currentSong} playlist={playlist} />
                         </div>
                     )}
                 </div>

@@ -23,7 +23,7 @@ class TrangChuService extends Controller
 
     public function getPlaylist(){
         try{
-            $playlist = Playlist::where('trangthai',1)->where('user_id',1)->limit(5)->get();
+            $playlist = Playlist::where('trangthai',1)->where('user_id',1)->get();
             return response()->json($playlist, 200);
         }
         catch (\Exception $exception){
