@@ -9,7 +9,7 @@ import {
     MdOutlineFullscreen
 } from "react-icons/md";
 import { loadYouTubeAPI } from "../../services/Admin/APIAudioSong.tsx";
-import { getDSPhat } from "../../services/User/TrangChuService.tsx";
+import { getDSPhat, tangLuotXem } from "../../services/User/TrangChuService.tsx";
 
 interface Song {
     id: number;
@@ -48,9 +48,13 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
     const [currentIndex, setCurrentIndex] = useState(0);
     const [hasNewSelection, setHasNewSelection] = useState(false);
 
-    const showLyrics = () => {
-        setLyrics(true);
-    };
+    useEffect(() => {
+        if (currentSong?.id) {
+            tangLuotXem(currentSong.id);
+        }
+    }, [currentSong.id]);
+
+    const showLyrics = () => setLyrics(true);
 
     const extractVideoId = (url: string): string | null => {
         const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
@@ -106,7 +110,6 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
         }
     }, [playlist]);
 
-
     useEffect(() => {
         const initPlayer = async () => {
             await loadYouTubeAPI();
@@ -134,8 +137,10 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
                         setTimeout(() => {
                             setDuration(player.getDuration());
                             setIsReady(true);
+                            if (typeof player.setVolume === "function") {
+                                player.setVolume(volume * 100);
+                            }
                             player.playVideo();
-                            player.setVolume(volume * 100);
                             setIsPlaying(true);
                         }, 500);
                     },
@@ -156,6 +161,17 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
             playerRef.current = null;
         };
     }, [videoId]);
+
+    useEffect(() => {
+        if (
+            playerRef.current &&
+            typeof playerRef.current.setVolume === "function" &&
+            isReady
+        ) {
+            playerRef.current.setVolume(volume * 100);
+        }
+    }, [volume, isReady]);
+
 
     const handleSongEnd = () => {
         const playedIds = [currentSong.id, ...playlist.map(s => s.id)];
@@ -271,10 +287,7 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
 
             <div className="flex items-center gap-4">
                 <button className="text-white"><MdOutlineOndemandVideo size={20} /></button>
-                <button className="text-white cursor-pointer" onClick={showLyrics}>
-                    <MdOutlineLyrics size={20} />
-
-                </button>
+                <button className="text-white cursor-pointer" onClick={showLyrics}><MdOutlineLyrics size={20} /></button>
                 {isLyrics && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
                         <div className="bg-[#1e1b29] text-white rounded-lg p-6 w-[90%] max-w-lg max-h-[80vh] overflow-y-auto shadow-lg relative">
@@ -293,11 +306,7 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
                         max="1"
                         step="0.01"
                         value={volume}
-                        onChange={(e) => {
-                            const vol = parseFloat(e.target.value);
-                            setVolume(vol);
-                            playerRef.current?.setVolume(vol * 100);
-                        }}
+                        onChange={(e) => setVolume(parseFloat(e.target.value))}
                         className="w-24 h-1 accent-white"
                     />
                     <span className="text-white text-sm w-[32px]">{Math.round(volume * 100)}%</span>

@@ -26,5 +26,17 @@ const getSongsInPlaylist = async (id: number) => {
 const getDSMoiPhatHanh = async () => {
     return axiosInstance.get(`/user/getNewSongs`);
 };
+const tangLuotXem = async (id: number) => {
+    return axiosInstance.post(`/user/BaiHat/${id}/tangLuotXem`);
+};
+export const getTopSongs = async () => {
+    try {
+        const response = await axiosInstance.get("/user/getTopBaiHat");
+        return response.data;
+    } catch (error) {
+        console.error("Lỗi khi lấy top bài hát:", error);
+        return [];
+    }
+};
 
-export {getDSBaiRandom,getDSPhat,getDSPlaylist,getSongsInPlaylist,getDSMoiPhatHanh}
+export {getDSBaiRandom,getDSPhat,getDSPlaylist,getSongsInPlaylist,getDSMoiPhatHanh,tangLuotXem}

@@ -60,4 +60,6 @@ Route::prefix('user')->group(function () {
     Route::get('getPlaylist', [TrangChuController::class, 'getPlaylist']);
     Route::get('getSonginPlaylist/{id}', [TrangChuController::class, 'getSonginPlaylist']);
     Route::get('getNewSongs', [TrangChuController::class, 'getNewSongs']);
+    Route::post('/BaiHat/{id}/tangLuotXem', [TrangChuController::class, 'tangLuotXem']);
+    Route::get('/getTopBaiHat', [TrangChuController::class, 'getTopBaiHat']);
 });

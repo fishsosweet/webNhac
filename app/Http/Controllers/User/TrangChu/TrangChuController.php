@@ -59,5 +59,19 @@ class TrangChuController extends Controller
             ], 500);
         }
     }
+    public function tangLuotXem($id)
+    {
+        $song = BaiHat::find($id);
+        $song->increment('luotxem');
+    }
 
+    public function getTopBaiHat()
+    {
+        $topSongs = BaiHat::with('casi')
+        ->orderByDesc('luotxem')
+            ->take(3)
+            ->get();
+
+        return response()->json($topSongs);
+    }
 }

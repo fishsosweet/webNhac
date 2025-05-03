@@ -6,15 +6,15 @@
 //     { title: "Top 100 Pop Âu Mỹ Hay Nhất", img: "/path/to/image5.jpg" },
 //     { title: "Hit-Maker: Hứa Kim Tuyền", img: "/path/to/image6.jpg" },
 // ];
-import {getDSBaiRandom, getDSMoiPhatHanh, getDSPlaylist} from "../../services/User/TrangChuService.tsx";
+import {getDSBaiRandom, getDSMoiPhatHanh, getDSPlaylist, getTopSongs} from "../../services/User/TrangChuService.tsx";
 import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import {
     FaHeart,FaPlay
 } from "react-icons/fa";
 import dayjs from 'dayjs';
-
-
+import {XAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell} from "recharts";
+const colors = ['#f87171', '#60a5fa', '#34d399'];
 export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
     onPlaySong: (song: any) => void,
     onPlayPlaylist: (playlistId: number) => void
@@ -24,6 +24,33 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
     const [playlist, setPlaylist] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [newReleases, setNewReleases] = useState<any[]>([]);
+    const [topSongs, setTopSongs] = useState<any[]>([]);
+    const [barData, setBarData] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchTopSongs = async () => {
+            try {
+                const res = await getTopSongs();
+                if (res && !res.error) {
+                    const totalViews = res.reduce((sum: number, song: any) => sum + song.luotxem, 0);
+                    const songsWithPercent = res.map((song: any) => ({
+                        ...song,
+                        percent: totalViews > 0 ? ((song.luotxem / totalViews) * 100).toFixed(1) : 0,
+                    }));
+                    setTopSongs(songsWithPercent);
+                    const chartData = songsWithPercent.map((song: any) => ({
+                        time: song.title,
+                        views: song.luotxem,
+                    }));
+                    setBarData(chartData);
+                }
+            } catch (e) {
+                console.error("Lỗi khi lấy top 3 bài hát có lượt xem cao nhất", e);
+            }
+        };
+        fetchTopSongs();
+    }, []);
+
 
 
     useEffect(() => {
@@ -34,10 +61,9 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
                     setNewReleases(res.data);
                 }
             } catch (e) {
-                console.error("Lỗi khi lấy nhạc mới phát hành", e);
+                console.error("Lỗi khi lấy nhạc mới", e);
             }
         };
-
         fetchNewReleases();
     }, []);
 
@@ -94,7 +120,6 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
             {/*    </div>*/}
             {/*</section>*/}
 
-            {/* Gợi Ý Cho Bạn */}
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Gợi Ý Cho Bạn</h2>
@@ -202,8 +227,6 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
                                 <h3 className="text-gray-500 mt-2 font-semibold text-sm">{playlist.ten_playlist}</h3>
                                 <p className="text-gray-400 text-xs line-clamp-2">{playlist.description}</p>
                             </div>
-
-
                         ))}
                     </div>
                 </div>
@@ -215,7 +238,6 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
                         TẤT CẢ &gt;
                     </Link>
                 </div>
-
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                     {newReleases.map((item) => (
                         <div key={item.id}
@@ -236,11 +258,11 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
                             </div>
                             <div className="flex flex-col overflow-hidden">
                                 <div className="flex flex-col overflow-hidden">
-                                    <Link to="/">
+                                    <Link to="/" className="inline-block max-w-fit">
                                     <span
                                         className="font-semibold hover:text-[#9b4de0] text-[18px] truncate max-w-[150px]">{item.title}</span>
                                     </Link>
-                                    <Link to="/">
+                                    <Link to="/" className="inline-block max-w-fit">
                                         <span
                                             className="text-xs text-gray-400 hover:text-[#9b4de0] truncate max-w-[180px]">{item.casi.ten_casi}</span>
                                     </Link>
@@ -265,7 +287,58 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
                     ))}
                 </div>
             </section>
+            <section>
+                <div
+                    className="flex bg-gradient-to-br from-purple-950 to-purple-800 text-white p-6 rounded-lg shadow-lg mt-15">
+                    <div className="w-1/3 space-y-4">
+                        <h2 className="text-2xl font-bold mb-4">#zingchart</h2>
+                        {topSongs.map((song, index) => (
+                            <div key={index} className="flex items-center bg-purple-800 p-3 rounded-lg space-x-3 w-[450px] hover:bg-purple-900 cursor-pointer"  onClick={() => onPlaySong(song)}>
+                                <div className="text-2xl font-bold text-white">{index + 1}</div>
+                                <img src={`http://127.0.0.1:8000/${song.anh}`} alt={song.title} className="w-12 h-12 rounded-md object-cover"/>
+                                <div className="flex-1">
+                                    <div className="font-semibold">{song.title}</div>
+                                    <Link to="/" className="inline-block max-w-fit">
+                                        <div className="text-xs text-gray-400 hover:text-[#9b4de0] truncate max-w-[180px]">{song.casi.ten_casi}</div>
+                                    </Link>
 
+                                </div>
+                                <div className="text-xl font-bold">{song.percent}%</div>
+
+                            </div>
+                        ))}
+                        <button className="bg-white text-purple-800 font-bold px-4 py-2 rounded-full mt-4">
+                            Xem thêm
+                        </button>
+                    </div>
+                    <div className="w-2/3 pl-5 pt-10 ml-10">
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={barData} margin={{ top: 10, right: 80, left: 80, bottom: 5 }}>
+                                <XAxis dataKey="time" stroke="#888" fontSize={14} />
+                                <XAxis dataKey="time" stroke="none" />
+                                <Tooltip
+                                    isAnimationActive={false}
+                                    cursor={false}
+                                    contentStyle={{
+                                        backgroundColor: '#fff',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '8px',
+                                        color: '#000',
+                                    }}
+                                    itemStyle={{
+                                        color: '#000'
+                                    }}
+                                />
+                                <Bar dataKey="views" radius={[20, 20, 0, 0]} stroke="none" >
+                                    {barData.map((_entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </section>
         </div>
     );
 }
