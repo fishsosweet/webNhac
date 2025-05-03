@@ -7,7 +7,7 @@
 //     { title: "Hit-Maker: Hứa Kim Tuyền", img: "/path/to/image6.jpg" },
 // ];
 import {getDSBaiRandom, getDSMoiPhatHanh, getDSPlaylist, getTopSongs} from "../../services/User/TrangChuService.tsx";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
 import {
     FaHeart,FaPlay
@@ -94,11 +94,22 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
             console.error("Đã có lỗi xảy ra", e);
         }
     }
+    const barDataMemo = useMemo(() => {
+        return topSongs.map((song: any) => ({
+            time: song.title,
+            views: song.luotxem,
+        }));
+    }, [topSongs]);
 
     useEffect(() => {
-        getBaiHatRandom();
-        getPlaylist();
-    }, []);
+        if (baiHatRandom.length === 0) {
+            getBaiHatRandom();
+        }
+        if (playlist.length === 0) {
+            getPlaylist();
+        }
+    }, [baiHatRandom, playlist]); // Chỉ gọi API nếu dữ liệu chưa có
+
     return (
         <div className="p-15 bg-[#170f23] text-white">
             {/*<section className="mb-10">*/}
@@ -289,7 +300,7 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
             </section>
             <section>
                 <div
-                    className="flex bg-gradient-to-br from-purple-950 to-purple-800 text-white p-6 rounded-lg shadow-lg mt-15">
+                    className="flex bg-gradient-to-br from-purple-950 to-purple-800 text-white p-6 rounded-lg shadow-lg mt-15 bg-[#170f23]">
                     <div className="w-1/3 space-y-4">
                         <h2 className="text-2xl font-bold mb-4">#zingchart</h2>
                         {topSongs.map((song, index) => (
@@ -339,6 +350,7 @@ export default function HomeUser({ onPlaySong, onPlayPlaylist }: {
                     </div>
                 </div>
             </section>
+
         </div>
     );
 }

@@ -27,7 +27,7 @@ class TrangChuController extends Controller
         $exclude = $request->input('exclude', []);
         $songs = Baihat::whereNotIn('id', $exclude)
             ->inRandomOrder()
-            ->limit(5)
+            ->limit(10)
             ->with('casi')
             ->get();
 
@@ -54,7 +54,7 @@ class TrangChuController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => true,
-                'message' => 'Đã xảy ra lỗi khi lấy bài hát mới phát hành',
+                'message' => 'Đã xảy ra lỗi khi lấy bài hát mới',
                 'details' => $e->getMessage()
             ], 500);
         }
