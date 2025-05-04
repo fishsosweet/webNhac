@@ -120,7 +120,6 @@ export default function SidebarUser() {
                     <div className="flex-1 mt-[65px] overflow-y-auto bg-[#170f23] pb-24">
                         <HomeUser onPlaySong={handlePlaySong} onPlayPlaylist={handlePlayPlaylist} />
                     </div>
-
                     {isPlaying && currentSong && (
                         <div className="fixed left-64 right-0 bottom-0 z-50">
                             <MusicPlayer song={currentSong} playlist={playlist} />

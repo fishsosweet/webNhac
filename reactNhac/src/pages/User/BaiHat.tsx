@@ -1,3 +1,4 @@
+// MusicPlayer.tsx
 import { useEffect, useRef, useState, useMemo } from "react";
 import {
     FaHeart, FaStepBackward, FaPlay, FaPause,
@@ -15,9 +16,7 @@ interface Song {
     id: number;
     title: string;
     anh: string;
-    casi: {
-        ten_casi: string;
-    };
+    casi: { ten_casi: string };
     audio_url: string;
     lyrics: string;
 }
@@ -35,113 +34,110 @@ declare global {
 }
 
 export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlayerProps) {
+    const MAX_HISTORY = 100;
     const [volume, setVolume] = useState(1);
-    const playerRef = useRef<YT.Player | null>(null);
-    const playerContainerRef = useRef<HTMLDivElement | null>(null);
-    const [isReady, setIsReady] = useState(false);
+    const [queue, setQueue] = useState<Song[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isReady, setIsReady] = useState(false);
     const [isLyrics, setLyrics] = useState(false);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
-    const [currentSong, setCurrentSong] = useState<Song>(song);
-    const [playlist, setPlaylist] = useState<Song[]>([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [hasNewSelection, setHasNewSelection] = useState(false);
+
+    const playerRef = useRef<YT.Player | null>(null);
+    const playerContainerRef = useRef<HTMLDivElement | null>(null);
+
+    const currentSong = queue[currentIndex];
+    useEffect(() => {
+        if (!song) return;
+
+        if (playlistProp && playlistProp.length > 0) {
+            const filtered = playlistProp.filter((s, i, arr) =>
+                arr.findIndex(x => x.id === s.id) === i // Lọc trùng trong chính playlist
+            );
+
+            const isDifferent = filtered.some((s, i) => s.id !== queue[i]?.id);
+            if (isDifferent || queue.length !== filtered.length) {
+                setQueue(filtered.slice(0, MAX_HISTORY));
+                const index = filtered.findIndex(s => s.id === song.id);
+                setCurrentIndex(index !== -1 ? index : 0);
+                return; // không cần xử lý tiếp
+            }
+        }
+
+        // Nếu không phải playlist → người dùng chọn bài lẻ
+        if (song.id !== currentSong?.id) {
+            insertSongToQueue(song);
+        }
+    }, [song, playlistProp]);
+
+
+
+
+
+    const insertSongToQueue = (newSong: Song) => {
+        setQueue(prev => {
+            // Loại bỏ bản sao nếu bài đã có
+            const withoutNewSong = prev.filter(s => s.id !== newSong.id);
+
+            // Tính toán vị trí để chèn bài mới vào
+            const insertPos = currentIndex + 1;
+            const newQueue = [
+                ...withoutNewSong.slice(0, insertPos),
+                newSong,
+                ...withoutNewSong.slice(insertPos)
+            ].slice(-MAX_HISTORY); // Giới hạn tối đa 100 bài
+
+            // Cập nhật index để phát ngay bài mới
+            const newIndex = newQueue.findIndex(s => s.id === newSong.id);
+            setCurrentIndex(newIndex);
+
+            return newQueue;
+        });
+    };
+
+
+
+
 
     useEffect(() => {
-        if (currentSong?.id) {
+        if (currentSong) {
             tangLuotXem(currentSong.id);
         }
-    }, [currentSong.id]);
-
-    const showLyrics = () => setLyrics(true);
+    }, [currentSong?.id]);
 
     const extractVideoId = (url: string): string | null => {
         const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
         return match ? match[1] : null;
     };
 
-    const videoId = useMemo(() => extractVideoId(currentSong.audio_url), [currentSong.audio_url]);
-
-    const fetchNextSongs = async (excludeIds: number[] = []) => {
-        if (playlistProp && playlistProp.length > 0) {
-            const filtered = playlistProp.filter(song => !excludeIds.includes(song.id));
-            if (filtered.length > 0) {
-                setPlaylist(filtered);
-                setCurrentIndex(0);
-                return;
-            }
-        }
-
-        try {
-            const response = await getDSPhat(excludeIds);
-            if (Array.isArray(response.data)) {
-                setPlaylist(response.data);
-                setCurrentIndex(0);
-            }
-        } catch (error) {
-            console.error("Lỗi khi lấy danh sách nhạc:", error);
-        }
-    };
-
-    useEffect(() => {
-        if (!song) return;
-
-        setCurrentSong({ ...song });
-        setHasNewSelection(true);
-        if (playlistProp && playlistProp.length > 0) {
-            const index = playlistProp.findIndex(s => s.id === song.id);
-            setPlaylist(playlistProp);
-            setCurrentIndex(index >= 0 ? index : 0);
-        } else {
-            setPlaylist([song]);
-            setCurrentIndex(0);
-        }
-    }, [song, playlistProp]);
-
-    useEffect(() => {
-        if (playlist.length > 0 && !hasNewSelection) {
-            setCurrentIndex(0);
-            setCurrentSong(playlist[0]);
-        }
-
-        if (hasNewSelection) {
-            setHasNewSelection(false);
-        }
-    }, [playlist]);
+    const videoId = useMemo(() => extractVideoId(currentSong?.audio_url || ""), [currentSong]);
 
     useEffect(() => {
         const initPlayer = async () => {
+            const videoId = extractVideoId(currentSong?.audio_url || "");
+            if (!videoId) return;
+
             await loadYouTubeAPI();
+            if (!playerContainerRef.current) return;
 
-            if (!playerContainerRef.current || !videoId) return;
-
-            if (playerRef.current) {
-                playerRef.current.destroy();
-                playerRef.current = null;
-            }
+            if (playerRef.current) playerRef.current.destroy();
 
             playerRef.current = new window.YT.Player(playerContainerRef.current, {
-                height: '0',
-                width: '0',
-                videoId,
-                playerVars: {
-                    controls: 0,
-                    autoplay: 0,
-                    modestbranding: 1,
-                    disablekb: 1,
-                },
+                height: '0', width: '0', videoId,
+                playerVars: { controls: 0, autoplay: 0, modestbranding: 1, disablekb: 1 },
                 events: {
                     onReady: (event) => {
                         const player = event.target;
+                        playerRef.current = player;
                         setTimeout(() => {
-                            setDuration(player.getDuration());
-                            setIsReady(true);
-                            if (typeof player.setVolume === "function") {
+                            if (player && typeof player.setVolume === 'function') {
+                                setDuration(player.getDuration());
+                                setIsReady(true);
                                 player.setVolume(volume * 100);
+                                player.playVideo();
+                                setIsPlaying(true);
                             }
-                            player.playVideo();
-                            setIsPlaying(true);
                         }, 500);
                     },
                     onStateChange: (event) => {
@@ -153,57 +149,74 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
             });
         };
 
-        setIsReady(false);
-        initPlayer();
+        if (currentSong) {
+            setIsReady(false);
+            initPlayer();
+        }
 
         return () => {
             playerRef.current?.destroy();
-            playerRef.current = null;
         };
-    }, [videoId]);
+    }, [currentSong?.audio_url]); // Lưu ý: dùng audio_url trực tiếp để trigger update
+
 
     useEffect(() => {
-        if (
-            playerRef.current &&
-            typeof playerRef.current.setVolume === "function" &&
-            isReady
-        ) {
+        if (playerRef.current && typeof playerRef.current.setVolume === 'function') {
             playerRef.current.setVolume(volume * 100);
         }
-    }, [volume, isReady]);
-
-
-    const handleSongEnd = () => {
-        const playedIds = [currentSong.id, ...playlist.map(s => s.id)];
-
-        if (playlist.length > 0 && currentIndex < playlist.length - 1) {
-            const nextIndex = currentIndex + 1;
-            setCurrentIndex(nextIndex);
-            setCurrentSong(playlist[nextIndex]);
+    }, [volume]);
+    const handleSongEnd = async () => {
+        if (currentIndex < queue.length - 1) {
+            setCurrentIndex(prev => prev + 1);
         } else {
-            fetchNextSongs(playedIds);
+            try {
+                const excludeIds = queue.map(s => s.id);
+                const res = await getDSPhat(excludeIds);
+                if (Array.isArray(res.data) && res.data.length > 0) {
+                    const nextSong = res.data[0];
+                    setQueue(prev => [...prev, nextSong].slice(-MAX_HISTORY));
+                    setCurrentIndex(prev => prev + 1);
+                }
+            } catch (err) {
+                console.error("Lỗi tải bài mới:", err);
+            }
         }
     };
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (playerRef.current?.getCurrentTime) {
-                setCurrentTime(playerRef.current.getCurrentTime());
-            }
-        }, 500);
-        return () => clearInterval(interval);
-    }, [isReady]);
 
     const togglePlay = () => {
         if (!playerRef.current || !isReady) return;
-
-        if (isPlaying) {
-            playerRef.current.pauseVideo();
-        } else {
-            playerRef.current.playVideo();
-        }
+        if (isPlaying) playerRef.current.pauseVideo();
+        else playerRef.current.playVideo();
         setIsPlaying(!isPlaying);
     };
+
+    const handleNext = () => {
+        if (currentIndex < queue.length - 1) setCurrentIndex(prev => prev + 1);
+        else handleSongEnd();
+    };
+
+    const handleBack = () => {
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1); // Quay lại bài hát trước đó trong mảng
+        } else {
+            // Nếu đã ở bài đầu tiên, có thể bạn muốn dừng lại hoặc giữ nguyên.
+            setCurrentIndex(0);
+            if (playerRef.current) {
+                playerRef.current.seekTo(0, true); // Quay lại đầu bài
+                playerRef.current.playVideo();
+            }
+        }
+    };
+
+
+
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (playerRef.current?.getCurrentTime) setCurrentTime(playerRef.current.getCurrentTime());
+        }, 500);
+        return () => clearInterval(interval);
+    }, [isReady]);
 
     const formatTime = (time: number): string => {
         const min = Math.floor(time / 60);
@@ -211,39 +224,15 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
         return `${min}:${sec}`;
     };
 
-    const handlePrevSong = () => {
-        if (!playerRef.current) return;
+    const showLyrics = () => setLyrics(true);
 
-        if (playlist.length > 0 && currentIndex > 0) {
-            const prevIndex = currentIndex - 1;
-            setCurrentIndex(prevIndex);
-            setCurrentSong(playlist[prevIndex]);
-        } else {
-            playerRef.current.seekTo(0, true);
-            playerRef.current.playVideo();
-        }
-    };
-
-    const handleNextSong = () => {
-        if (playlist.length > 0 && currentIndex < playlist.length - 1) {
-            const nextIndex = currentIndex + 1;
-            setCurrentIndex(nextIndex);
-            setCurrentSong(playlist[nextIndex]);
-        } else {
-            const playedIds = [currentSong.id, ...playlist.map(s => s.id)];
-            fetchNextSongs(playedIds);
-        }
-    };
+    if (!currentSong) return null;
 
     return (
         <div className="bg-[#120f19] p-4 flex items-center justify-between rounded-2xl shadow-lg relative">
             <div ref={playerContainerRef} style={{ display: 'none' }} />
             <div className="flex items-center gap-4 w-[300px]">
-                <img
-                    src={`http://127.0.0.1:8000/${currentSong.anh}`}
-                    alt="Album Cover"
-                    className="w-16 h-16 rounded-md object-cover"
-                />
+                <img src={`http://127.0.0.1:8000/${currentSong.anh}`} className="w-16 h-16 rounded-md object-cover" />
                 <div>
                     <h3 className="text-white font-semibold truncate max-w-[150px]">{currentSong.title}</h3>
                     <p className="text-sm text-gray-400 truncate max-w-[150px]">{currentSong.casi?.ten_casi}</p>
@@ -254,7 +243,7 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
 
             <div className="flex flex-col items-center flex-1 px-10">
                 <div className="flex items-center gap-5 mb-2">
-                    <button className="text-white cursor-pointer" onClick={handlePrevSong}><FaStepBackward /></button>
+                    <button className="text-white cursor-pointer" onClick={handleBack}><FaStepBackward /></button>
                     <button
                         onClick={togglePlay}
                         disabled={!isReady}
@@ -262,7 +251,7 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
                     >
                         {isPlaying ? <FaPause /> : <FaPlay />}
                     </button>
-                    <button className="text-white cursor-pointer" onClick={handleNextSong}><FaStepForward /></button>
+                    <button className="text-white cursor-pointer" onClick={handleNext}><FaStepForward /></button>
                 </div>
                 <div className="flex items-center w-[520px] gap-3">
                     <span className="text-sm text-gray-400">{formatTime(currentTime)}</span>
@@ -301,10 +290,7 @@ export default function MusicPlayer({ song, playlist: playlistProp }: MusicPlaye
                 <div className="flex items-center gap-2">
                     <FaVolumeUp className="text-white" />
                     <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
+                        type="range" min="0" max="1" step="0.01"
                         value={volume}
                         onChange={(e) => setVolume(parseFloat(e.target.value))}
                         className="w-24 h-1 accent-white"

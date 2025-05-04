@@ -27,7 +27,7 @@ class TrangChuController extends Controller
         $exclude = $request->input('exclude', []);
         $songs = Baihat::whereNotIn('id', $exclude)
             ->inRandomOrder()
-            ->limit(10)
+            ->limit(1)
             ->with('casi')
             ->get();
 
